@@ -1,0 +1,234 @@
+/* ---- Card ---- */
+.ant-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s;
+}
+.ant-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ---- Table ---- */
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ant-table-thead > tr > th {
+  background: #fafbfc !important;
+  font-weight: 600;
+  color: #374151;
+  font-size: 13px;
+  border-bottom: 2px solid #e5e7eb !important;
+}
+.ant-table-tbody > tr:hover > td {
+  background: #f0f7ff !important;
+}
+.ant-table-tbody > tr.ant-table-expanded-row > td {
+  background: #f9fafb !important;
+}
+
+/* ---- Project row groups ---- */
+.ant-table-tbody > tr.project-group-even > td {
+  background: #ffffff !important;
+}
+.ant-table-tbody > tr.project-group-odd > td {
+  background: #f8fafc !important;
+}
+.ant-table-tbody > tr.project-group-even:hover > td,
+.ant-table-tbody > tr.project-group-odd:hover > td {
+  background: #f0f7ff !important;
+}
+
+.resizable-column-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.column-resize-handle {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 10px;
+  align-self: stretch;
+  min-height: 22px;
+  margin: -2px -8px -2px 0;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.column-resize-handle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  width: 1px;
+  height: calc(100% - 6px);
+  background: #d1d5db;
+}
+
+.column-resize-handle:hover::after {
+  background: #2563eb;
+}
+
+.action-column-title {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
+.action-column-title .action-column-toggle {
+  position: absolute;
+  right: 0;
+  flex: 0 0 20px;
+  width: 20px;
+  min-width: 20px;
+  padding: 0;
+}
+
+.ant-table-cell.action-column-collapsed {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+.ant-table-cell.action-column-expanded {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  text-align: center !important;
+}
+
+.column-filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+  padding: 4px 0;
+}
+
+.column-filter-panel .ant-checkbox-wrapper {
+  margin-inline-start: 0;
+  font-size: 13px;
+}
+
+.truncated-text {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.project-name-text {
+  max-width: 100%;
+}
+
+.project-name-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: calc(100% - 42px);
+  max-width: calc(100% - 42px);
+  min-width: 0;
+  vertical-align: middle;
+}
+
+.project-name-main {
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.validation-overview {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 18px;
+  overflow: hidden;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.validation-overview-block {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  padding: 0 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+  border-right: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+.validation-overview-block:last-child {
+  border-right: 0;
+}
+
+.ant-tag.truncated-tag {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* ---- Tags ---- */
+.ant-tag {
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 20px;
+  border: none;
+}
+
+/* ---- Stats ---- */
+.ant-statistic-title {
+  color: #6b7280 !important;
+  font-size: 13px !important;
+}
+.ant-statistic-content {
+  font-size: 24px !important;
+}
+
+/* ---- Sider ---- */
+.ant-layout-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Header ---- */
+.ant-layout-header {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Progress ---- */
+.ant-progress-bg {
+  border-radius: 4px !important;
+}
+
+/* ---- Version sub-rows ---- */
+.version-sub-row td {
+  border-bottom: 1px dashed #e5e7eb !important;
+}
+
+/* ---- Select dropdown ---- */
+.ant-select-dropdown {
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* ---- Button ---- */
+.ant-btn {
+  border-radius: 6px;
+}
+
+/* ---- Modal ---- */
+.ant-modal-content {
+  border-radius: 10px;
+}
