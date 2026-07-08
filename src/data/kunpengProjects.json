@@ -17054,26 +17054,46 @@
     ]
   },
   {
-    "id": 572,
-    "name": "ExampleLib23",
+    "id": 573,
+    "name": "ExampleLib",
     "type": "鲲鹏",
     "category": "基础库&加速库",
     "upstream": "https://github.com/example/example-lib",
     "latestVersion": "1.2.3",
     "maintainer": {
-      "name": "zhangsan",
+      "name": "zhangsang",
       "email": "zhangsan@example.com"
     },
     "supportedVersions": [
       {
         "version": "1.0.0",
-        "openEuler": "openEuler 24.03 LTS; openEuler 22.03 LTS SP3",
-        "hardware": "Kunpeng 930; Kunpeng 920B",
+        "openEuler": "openEuler 24.03 LTS",
+        "hardware": "Kunpeng 920B",
         "functional": "pass",
         "functionalDate": "2026-07-06",
         "performance": "stable",
         "performanceDate": "2026-07-06",
         "integratedDate": "2026-07-06"
+      }
+    ]
+  },
+  {
+    "id": 574,
+    "name": "ex",
+    "type": "鲲鹏",
+    "category": "11",
+    "upstream": "",
+    "latestVersion": "111",
+    "supportedVersions": [
+      {
+        "version": "111",
+        "openEuler": "openEuler 22.03 LTS",
+        "hardware": "Kunpeng 920; Kunpeng 920B",
+        "functional": null,
+        "functionalDate": null,
+        "performance": null,
+        "performanceDate": null,
+        "integratedDate": "2026-07-08"
       }
     ]
   }

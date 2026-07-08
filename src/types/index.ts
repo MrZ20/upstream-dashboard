@@ -33,6 +33,20 @@ export interface Project {
   supportedVersions: VersionInfo[];
 }
 
+export type OperationAction = 'add' | 'update' | 'delete';
+
+export interface OperationLog {
+  id: string;
+  action: OperationAction;
+  projectId: number;
+  projectName: string;
+  projectType: ProjectType;
+  time: string;
+  summary: string;
+  before?: Project | null;
+  after?: Project | null;
+}
+
 export interface SummaryStats {
   totalProjects: number;
   kunpengCount: number;

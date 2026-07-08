@@ -1,13 +1,101 @@
 import { useState, type KeyboardEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Button, Card, Form, Input, message, Select, Space, Tag, Typography } from 'antd';
-import { CloseOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import { Button, Card, Form, Input, message, Modal, Select, Space, Table, Tabs, Tag, Typography } from 'antd';
+import { CloseOutlined, CopyOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../contexts/ProjectContext';
-import { Project, ProjectType, VersionInfo } from '../types';
+import { OperationLog, Project, ProjectType, VersionInfo } from '../types';
 import ProjectTable from '../components/ProjectTable';
 
 const { Text, Paragraph } = Typography;
+
+function getActionMeta(action: OperationLog['action']) {
+  if (action === 'add') return { label: '新增', color: 'green' };
+  if (action === 'update') return { label: '修改', color: 'blue' };
+  return { label: '删除', color: 'red' };
+}
+
+
+function stringifyLogSnapshot(snapshot?: Project | null) {
+  return snapshot ? JSON.stringify(snapshot, null, 2) : '无';
+}
+
+type DiffLine = {
+  type: 'same' | 'added' | 'removed';
+  text: string;
+};
+
+function buildJsonDiff(beforeText: string, afterText: string): DiffLine[] {
+  if (beforeText === afterText) {
+    return beforeText.split('\n').map(line => ({ type: 'same', text: line }));
+  }
+
+  const beforeLines = beforeText === '无' ? [] : beforeText.split('\n');
+  const afterLines = afterText === '无' ? [] : afterText.split('\n');
+  const dp = Array.from({ length: beforeLines.length + 1 }, () => Array(afterLines.length + 1).fill(0));
+
+  for (let i = beforeLines.length - 1; i >= 0; i -= 1) {
+    for (let j = afterLines.length - 1; j >= 0; j -= 1) {
+      dp[i][j] = beforeLines[i] === afterLines[j]
+        ? dp[i + 1][j + 1] + 1
+        : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+
+  const result: DiffLine[] = [];
+  let i = 0;
+  let j = 0;
+
+  while (i < beforeLines.length && j < afterLines.length) {
+    if (beforeLines[i] === afterLines[j]) {
+      result.push({ type: 'same', text: beforeLines[i] });
+      i += 1;
+      j += 1;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      result.push({ type: 'removed', text: beforeLines[i] });
+      i += 1;
+    } else {
+      result.push({ type: 'added', text: afterLines[j] });
+      j += 1;
+    }
+  }
+
+  while (i < beforeLines.length) {
+    result.push({ type: 'removed', text: beforeLines[i] });
+    i += 1;
+  }
+
+  while (j < afterLines.length) {
+    result.push({ type: 'added', text: afterLines[j] });
+    j += 1;
+  }
+
+  return result;
+}
+
+function getDiffLineStyle(type: DiffLine['type']) {
+  if (type === 'added') {
+    return { background: '#f6ffed', color: '#237804' };
+  }
+
+  if (type === 'removed') {
+    return { background: '#fff1f0', color: '#a8071a' };
+  }
+
+  return { background: 'transparent', color: '#262626' };
+}
+
+function formatLogTime(value: string) {
+  return new Intl.DateTimeFormat('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).format(new Date(value));
+}
 
 type PreviewProject = Project;
 
@@ -184,6 +272,10 @@ export default function AdminSettings() {
   const [reloading, setReloading] = useState(false);
   const [previewType, setPreviewType] = useState<ProjectType>('鲲鹏');
   const [previewProjects, setPreviewProjects] = useState<PreviewProject[]>([]);
+  const [activeTab, setActiveTab] = useState('json');
+  const [logs, setLogs] = useState<OperationLog[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [selectedLog, setSelectedLog] = useState<OperationLog | null>(null);
   const valueGuide = type === '鲲鹏' ? kunpengValueGuide : ascendValueGuide;
 
   if (!isAdmin) {
@@ -209,6 +301,65 @@ export default function AdminSettings() {
       setReloading(false);
     }
   };
+
+
+  const loadLogs = async () => {
+    setLogsLoading(true);
+    try {
+      const response = await fetch('/api/operation-logs');
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.message || '日志加载失败');
+      }
+      const data = await response.json();
+      setLogs(Array.isArray(data.logs) ? data.logs : []);
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : '日志加载失败');
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+    if (key === 'logs') void loadLogs();
+  };
+
+
+  const handleCopyText = async (label: string, value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      message.success(`已复制${label}`);
+    } catch {
+      message.error('复制失败');
+    }
+  };
+
+  const renderSnapshotBlock = (title: string, value: string) => (
+    <div style={{ minWidth: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <Text strong>{title}</Text>
+        <Button size="small" icon={<CopyOutlined />} onClick={() => handleCopyText(title, value)}>
+          复制
+        </Button>
+      </div>
+      <pre style={{
+        margin: 0,
+        padding: 12,
+        maxHeight: 280,
+        overflow: 'auto',
+        border: '1px solid #f0f0f0',
+        borderRadius: 6,
+        background: '#fafafa',
+        fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", monospace',
+        fontSize: 12,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
+      }}>
+        {value}
+      </pre>
+    </div>
+  );
 
   const handleJsonChange = (value: string) => {
     setJsonText(value);
@@ -349,8 +500,52 @@ export default function AdminSettings() {
 
   const previewHiddenColumnKeys = previewType === '昇腾' ? ['validationOverview'] : [];
 
-  return (
-    <div>
+  const logColumns = [
+    {
+      title: '修改时间',
+      dataIndex: 'time',
+      width: 180,
+      render: (value: string) => formatLogTime(value),
+    },
+    {
+      title: '操作',
+      dataIndex: 'action',
+      width: 90,
+      render: (action: OperationLog['action']) => {
+        const meta = getActionMeta(action);
+        return <Tag color={meta.color}>{meta.label}</Tag>;
+      },
+    },
+    {
+      title: '类型',
+      dataIndex: 'projectType',
+      width: 90,
+      render: (value: ProjectType) => <Tag color={value === '鲲鹏' ? 'blue' : 'cyan'}>{value}</Tag>,
+    },
+    {
+      title: '软件名称',
+      dataIndex: 'projectName',
+      width: 180,
+      ellipsis: true,
+    },
+    {
+      title: '摘要',
+      dataIndex: 'summary',
+      ellipsis: true,
+    },
+    {
+      title: '详情',
+      key: 'detail',
+      width: 90,
+      align: 'center' as const,
+      render: (_: unknown, record: OperationLog) => (
+        <Button type="link" size="small" onClick={() => setSelectedLog(record)}>查看</Button>
+      ),
+    },
+  ];
+
+  const jsonAddPanel = (
+    <>
       <Card
         title="JSON 添加软件信息"
         extra={(
@@ -435,6 +630,100 @@ export default function AdminSettings() {
           />
         </Card>
       )}
+    </>
+  );
+
+  const logsPanel = (
+    <Card
+      title="日志信息"
+      extra={<Button icon={<ReloadOutlined />} loading={logsLoading} onClick={loadLogs}>刷新日志</Button>}
+    >
+      <Table
+        rowKey="id"
+        size="small"
+        loading={logsLoading}
+        columns={logColumns}
+        dataSource={logs}
+        pagination={{ pageSize: 10, showSizeChanger: false }}
+        locale={{ emptyText: '暂无操作日志' }}
+      />
+    </Card>
+  );
+
+  return (
+    <div>
+      <Tabs
+        activeKey={activeTab}
+        onChange={handleTabChange}
+        items={[
+          { key: 'json', label: 'JSON 添加软件信息', children: jsonAddPanel },
+          { key: 'logs', label: '操作日志', children: logsPanel },
+        ]}
+      />
+      <Modal
+        title={selectedLog ? `操作详情：${getActionMeta(selectedLog.action).label} ${selectedLog.projectName}` : '操作详情'}
+        open={selectedLog != null}
+        onCancel={() => setSelectedLog(null)}
+        footer={null}
+        width={960}
+      >
+        {selectedLog && (() => {
+          const beforeText = stringifyLogSnapshot(selectedLog.before);
+          const afterText = stringifyLogSnapshot(selectedLog.after);
+          const diffLines = buildJsonDiff(beforeText, afterText);
+
+          return (
+            <Space direction="vertical" size={12} style={{ width: '100%' }}>
+              <Space size={[8, 8]} wrap>
+                <Tag color={getActionMeta(selectedLog.action).color}>{getActionMeta(selectedLog.action).label}</Tag>
+                <Tag>{selectedLog.projectType}</Tag>
+                <Text strong>{selectedLog.projectName}</Text>
+                <Text type="secondary">ID: {selectedLog.projectId}</Text>
+                <Text type="secondary">{formatLogTime(selectedLog.time)}</Text>
+              </Space>
+              <Paragraph style={{ marginBottom: 0 }}>{selectedLog.summary}</Paragraph>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <Text strong>颜色对比</Text>
+                  <Space size={8}>
+                    <Tag color="red">删除</Tag>
+                    <Tag color="green">新增</Tag>
+                  </Space>
+                </div>
+                <pre style={{
+                  margin: 0,
+                  padding: 0,
+                  maxHeight: 320,
+                  overflow: 'auto',
+                  border: '1px solid #f0f0f0',
+                  borderRadius: 6,
+                  background: '#fff',
+                  fontFamily: 'SFMono-Regular, Consolas, "Liberation Mono", monospace',
+                  fontSize: 12,
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                }}>
+                  {diffLines.map((line, index) => (
+                    <div
+                      key={`${line.type}-${index}-${line.text}`}
+                      style={{ padding: '0 12px', minHeight: 20, ...getDiffLineStyle(line.type) }}
+                    >
+                      <span style={{ display: 'inline-block', width: 18 }}>
+                        {line.type === 'added' ? '+' : line.type === 'removed' ? '-' : ' '}
+                      </span>
+                      {line.text || ' '}
+                    </div>
+                  ))}
+                </pre>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 12 }}>
+                {renderSnapshotBlock('修改前', beforeText)}
+                {renderSnapshotBlock('修改后', afterText)}
+              </div>
+            </Space>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }
