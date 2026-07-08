@@ -1,56 +1,52 @@
 import { useState, type KeyboardEvent } from 'react';
 import { Navigate } from 'react-router-dom';
-import { Button, Card, Form, Input, message, Select, Space, Table, Tag, Tooltip, Typography } from 'antd';
-import {
-  ArrowDownOutlined,
-  ArrowUpOutlined,
-  CloseOutlined,
-  MinusOutlined,
-  PlusOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-} from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import { Button, Card, Form, Input, message, Select, Space, Tag, Typography } from 'antd';
+import { CloseOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 import { useProjects } from '../contexts/ProjectContext';
-import { FuncStatus, PerfStatus, Project, ProjectType } from '../types';
-import MaintainerTag from '../components/MaintainerTag';
+import { Project, ProjectType, VersionInfo } from '../types';
+import ProjectTable from '../components/ProjectTable';
 
 const { Text, Paragraph } = Typography;
 
-type PreviewProject = Omit<Project, 'id'>;
-interface PreviewRow {
-  key: string;
-  isVersion: boolean;
-  versionIndex?: number;
-  name: string;
-  category: string;
-  upstream?: string;
-  upstreamVersion?: string;
-  versionCount: number;
-  maintainerName?: string;
-  version?: string;
-  openEuler?: string;
-  hardware?: string;
-  functional?: FuncStatus | null;
-  functionalDate?: string | null;
-  performance?: PerfStatus | null;
-  performanceDate?: string | null;
-  ci?: string | null;
-  ciDate?: string | null;
-  branch?: string;
-  children?: PreviewRow[];
-  _project: PreviewProject;
+type PreviewProject = Project;
+
+function splitMultiValue(value?: string) {
+  return (value || '')
+    .split(';')
+    .map(item => item.trim())
+    .filter(Boolean);
 }
 
-const funcColor: Record<string, string> = { pass: '#16A34A', fail: '#DC2626' };
-const funcText: Record<string, string> = { pass: '通过', fail: '不通过' };
-const perfColor: Record<string, string> = { improvement: '#16A34A', stable: '#2563EB', regression: '#DC2626' };
-const perfText: Record<string, string> = { improvement: '提升', stable: '持平', regression: '回退' };
-const catColor = 'blue';
-const eulerColor = 'blue';
-const hwColor = 'blue';
-const upstreamColor = 'blue';
+function joinUniqueValues(values: Array<string | undefined>) {
+  return [...new Set(values.flatMap(splitMultiValue))].join('; ');
+}
+
+function latestDate(values: Array<string | null | undefined>) {
+  const sorted = values.filter(Boolean).sort();
+  return sorted.length ? sorted[sorted.length - 1] : null;
+}
+
+function mergeAscendVersions(supportedVersions: NonNullable<Partial<Project>['supportedVersions']>) {
+  if (!supportedVersions.length) return [];
+
+  const base = supportedVersions[0];
+  const targetCi: VersionInfo['ci'] = supportedVersions.some(version => version.ci === 'fail')
+    ? 'fail'
+    : supportedVersions.some(version => version.ci === 'pass')
+      ? 'pass'
+      : null;
+  const targetDates = supportedVersions
+    .filter(version => targetCi == null || version.ci === targetCi)
+    .map(version => version.ciDate);
+
+  return [{
+    ...base,
+    hardware: joinUniqueValues(supportedVersions.map(version => version.hardware)),
+    ci: targetCi,
+    ciDate: latestDate(targetDates),
+  }];
+}
 
 const kunpengValueGuide = [
   { field: 'functional', values: ['pass（通过）', 'fail（不通过）'] },
@@ -65,16 +61,16 @@ const exampleKunpeng = {
   name: 'ExampleLib',
   category: '基础库&加速库',
   upstream: 'https://github.com/example/example-lib',
-  upstreamVersion: '1.2.3',
+  latestVersion: '1.2.3',
   maintainer: {
     name: 'zhangsan',
     email: 'zhangsan@example.com',
   },
-  versions: [
+  supportedVersions: [
     {
       version: '1.0.0',
-      openEuler: 'openEuler 24.03 LTS',
-      hardware: 'Kunpeng 930',
+      openEuler: 'openEuler 24.03 LTS; openEuler 22.03 LTS SP3',
+      hardware: 'Kunpeng 930; Kunpeng 920B',
       functional: 'pass',
       functionalDate: '2026-07-06',
       performance: 'stable',
@@ -88,14 +84,15 @@ const exampleAscend = {
   name: 'ExampleAI',
   category: '推理加速',
   branch: 'main',
+  upstream: 'https://github.com/example/example-ai',
   maintainer: {
     name: 'lisi',
     email: 'lisi@example.com',
   },
-  versions: [
+  supportedVersions: [
     {
       version: '1.0.0',
-      hardware: 'Ascend 910B',
+      hardware: 'Ascend 910B; Ascend 910C; Ascend 310P',
       ci: 'pass',
       ciDate: '2026-07-06',
       integratedDate: '2026-07-06',
@@ -115,19 +112,21 @@ function normalizeImportedProject(input: Partial<Project>, type: ProjectType): O
         type,
         category: input.category,
         upstream: input.upstream || '',
-        upstreamVersion: input.upstreamVersion || '',
+        latestVersion: input.latestVersion || '',
         maintainer: input.maintainer,
-        versions: input.versions || [],
+        supportedVersions: input.supportedVersions || [],
       }
     : {
         name: input.name,
         type,
         category: input.category,
         branch: input.branch || 'main',
+        upstream: input.upstream || '',
         maintainer: input.maintainer,
-        versions: input.versions || [],
+        supportedVersions: mergeAscendVersions(input.supportedVersions || []),
       };
 }
+
 
 function getExampleText(type: ProjectType) {
   const objectText = JSON.stringify(type === '鲲鹏' ? exampleKunpeng : exampleAscend, null, 2)
@@ -159,13 +158,13 @@ function assertOption(
 }
 
 function validateProjectOptions(input: Partial<Project>, type: ProjectType) {
-  if (!input.versions) return;
-  if (!Array.isArray(input.versions)) {
-    throw new Error('versions 必须是数组');
+  if (!input.supportedVersions) return;
+  if (!Array.isArray(input.supportedVersions)) {
+    throw new Error('supportedVersions 必须是数组');
   }
 
-  input.versions.forEach((version, index) => {
-    const prefix = `versions[${index}]`;
+  input.supportedVersions.forEach((version, index) => {
+    const prefix = `supportedVersions[${index}]`;
     if (type === '鲲鹏') {
       assertOption(version.functional, ['pass', 'fail'], `${prefix}.functional`);
       assertOption(version.performance, ['improvement', 'stable', 'regression'], `${prefix}.performance`);
@@ -313,9 +312,13 @@ export default function AdminSettings() {
       const parsed = parseProjectInput(jsonText);
       const items = Array.isArray(parsed) ? parsed : [parsed];
       const normalizedItems = items.map(item => normalizeImportedProject(item, type));
+      const previewItems = normalizedItems.map((project, index) => ({
+        ...project,
+        id: -Date.now() - index,
+      }));
 
       setPreviewType(type);
-      setPreviewProjects(normalizedItems);
+      setPreviewProjects(previewItems);
       message.success(`已生成 ${normalizedItems.length} 条${type}软件预览`);
     } catch (error) {
       message.error(error instanceof Error ? error.message : 'JSON 解析失败');
@@ -331,7 +334,8 @@ export default function AdminSettings() {
     setSaving(true);
     try {
       for (const project of previewProjects) {
-        await dispatch({ type: 'ADD_PROJECT', payload: project });
+        const { id: _previewId, ...projectData } = project;
+        await dispatch({ type: 'ADD_PROJECT', payload: projectData });
       }
 
       message.success(`已保存 ${previewProjects.length} 条${previewType}软件信息`);
@@ -343,172 +347,7 @@ export default function AdminSettings() {
     }
   };
 
-  const previewRows: PreviewRow[] = previewProjects.map((project, index) => {
-    const latest = project.versions[0];
-    const children = project.versions.map((version, versionIndex) => ({
-      key: `preview-ver-${index}-${versionIndex}`,
-      isVersion: true,
-      versionIndex,
-      name: project.name,
-      category: project.category,
-      versionCount: 0,
-      version: version.version,
-      openEuler: version.openEuler,
-      hardware: version.hardware,
-      functional: version.functional,
-      functionalDate: version.functionalDate,
-      performance: version.performance,
-      performanceDate: version.performanceDate,
-      ci: version.ci,
-      ciDate: version.ciDate,
-      _project: project,
-    }));
-
-    return {
-      key: `preview-proj-${index}`,
-      isVersion: false,
-      name: project.name,
-      category: project.category,
-      upstream: project.upstream || '',
-      upstreamVersion: project.upstreamVersion || '',
-      versionCount: project.versions.length,
-      maintainerName: project.maintainer?.name,
-      version: latest?.version,
-      openEuler: latest?.openEuler,
-      hardware: latest?.hardware,
-      functional: latest?.functional ?? null,
-      functionalDate: latest?.functionalDate ?? null,
-      performance: latest?.performance ?? null,
-      performanceDate: latest?.performanceDate ?? null,
-      ci: latest?.ci ?? null,
-      ciDate: latest?.ciDate ?? null,
-      branch: project.branch || 'main',
-      _project: project,
-      children: children.length > 0 ? children : undefined,
-    };
-  });
-
-  const isAscendPreview = previewType === '昇腾';
-  const nameWidth = isAscendPreview ? undefined : 280;
-  const catWidth = isAscendPreview ? undefined : 130;
-  const hwWidth = isAscendPreview ? undefined : 150;
-
-  const commonPreviewColumns: ColumnsType<PreviewRow> = [
-    {
-      title: '项目名称', dataIndex: 'name', key: 'name', width: nameWidth,
-      render: (name: string, record: PreviewRow) => {
-        if (record.isVersion) return null;
-        return (
-          <Space>
-            {record.upstream ? (
-              <a style={{ fontWeight: 600 }} href={record.upstream} target="_blank" rel="noopener noreferrer">{name}</a>
-            ) : (
-              <span style={{ fontWeight: 600 }}>{name}</span>
-            )}
-            {record._project.maintainer && <MaintainerTag maintainer={record._project.maintainer} />}
-          </Space>
-        );
-      },
-    },
-    {
-      title: '分类', dataIndex: 'category', key: 'category', width: catWidth,
-      render: (category: string, record: PreviewRow) => {
-        if (record.isVersion) return null;
-        return category ? <Tag color={catColor}>{category}</Tag> : null;
-      },
-    },
-  ];
-
-  const kunpengPreviewColumns: ColumnsType<PreviewRow> = [
-    {
-      title: '上游最新版本', dataIndex: 'upstreamVersion', key: 'upstream', width: 120,
-      render: (value: string, record: PreviewRow) => {
-        if (record.isVersion) return null;
-        return value ? <Tag color={upstreamColor}>{value}</Tag> : null;
-      },
-    },
-    {
-      title: '支持版本', dataIndex: 'version', key: 'version', width: 150,
-      render: (value: string, record: PreviewRow) => {
-        if (record.isVersion && value) return <Tag color="blue" style={{ fontFamily: 'monospace', fontSize: 13 }}>v{value}</Tag>;
-        if (!record.isVersion && value) {
-          const extra = record.versionCount > 1 ? ` +${record.versionCount - 1}` : '';
-          return <Tag color="blue" style={{ fontFamily: 'monospace', fontSize: 13 }}>v{value}{extra && <span style={{ color: '#999', fontSize: 11 }}>{extra}</span>}</Tag>;
-        }
-        return <span style={{ color: '#ccc' }}>-</span>;
-      },
-    },
-    {
-      title: 'openEuler 版本', dataIndex: 'openEuler', key: 'openEuler', width: 200,
-      render: (value: string) => value ? <Tag color={eulerColor}>{value}</Tag> : null,
-    },
-    {
-      title: '硬件型号', dataIndex: 'hardware', key: 'hardware', width: hwWidth,
-      render: (value: string) => value ? <Tag color={hwColor}>{value}</Tag> : null,
-    },
-    {
-      title: '功能验证', dataIndex: 'functional', key: 'functional', width: 140,
-      render: (status: FuncStatus, record: PreviewRow) => {
-        if (!status) return <span style={{ color: '#ccc' }}>-</span>;
-        return (
-          <Tooltip title={record.functionalDate ? `测试日期: ${record.functionalDate}` : undefined}>
-            <Tag color={funcColor[status]}>{funcText[status]}{record.functionalDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.functionalDate}</span>}</Tag>
-          </Tooltip>
-        );
-      },
-    },
-    {
-      title: '性能验证', dataIndex: 'performance', key: 'performance', width: 170,
-      render: (status: PerfStatus, record: PreviewRow) => {
-        if (!status) return <span style={{ color: '#ccc' }}>-</span>;
-        const icon = status === 'improvement' ? <ArrowUpOutlined /> : status === 'regression' ? <ArrowDownOutlined /> : <MinusOutlined />;
-        return (
-          <Tooltip title={record.performanceDate ? `测试日期: ${record.performanceDate}` : undefined}>
-            <Tag color={perfColor[status]}>{icon} {perfText[status]}{record.performanceDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.performanceDate}</span>}</Tag>
-          </Tooltip>
-        );
-      },
-    },
-  ];
-
-  const ascendPreviewColumns: ColumnsType<PreviewRow> = [
-    {
-      title: '看护分支', dataIndex: 'branch', key: 'branch',
-      render: (value: string, record: PreviewRow) => {
-        if (record.isVersion) return null;
-        return value ? <Tag>{value}</Tag> : <Tag>main</Tag>;
-      },
-    },
-    {
-      title: '硬件型号', dataIndex: 'hardware', key: 'hardware',
-      render: (value: string) => value ? <Tag color={hwColor}>{value}</Tag> : null,
-    },
-    {
-      title: 'CI验证结果', dataIndex: 'ci', key: 'ci',
-      render: (status: string, record: PreviewRow) => {
-        if (record.isVersion) return null;
-        if (status === 'pass') {
-          return (
-            <Tag color={funcColor.pass}>
-              通过{record.ciDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.ciDate}</span>}
-            </Tag>
-          );
-        }
-        if (status === 'fail') {
-          return (
-            <Tag color={funcColor.fail}>
-              不通过{record.ciDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.ciDate}</span>}
-            </Tag>
-          );
-        }
-        return <span style={{ color: '#ccc' }}>-</span>;
-      },
-    },
-  ];
-
-  const previewColumns: ColumnsType<PreviewRow> = isAscendPreview
-    ? [...commonPreviewColumns, ...ascendPreviewColumns]
-    : [...commonPreviewColumns, ...kunpengPreviewColumns];
+  const previewHiddenColumnKeys = previewType === '昇腾' ? ['validationOverview'] : [];
 
   return (
     <div>
@@ -562,7 +401,7 @@ export default function AdminSettings() {
           <Space direction="vertical" size={8} style={{ width: '100%' }}>
             <Paragraph style={{ marginBottom: 0 }}>
               <Text strong>固定字段可选值：</Text>
-              <Text type="secondary">标准 JSON 不支持注释；状态字段可不填或填 null，填写时需使用下方值。openEuler 和 hardware 是可扩展文本，可直接填写新值。</Text>
+              <Text type="secondary">标准 JSON 不支持注释；状态字段可不填或填 null，填写时需使用下方值。openEuler 和 hardware 是可扩展文本，可直接填写新值；同一字段多个值用英文分号 ; 分隔。</Text>
             </Paragraph>
             {valueGuide.map(item => (
               <div key={item.field} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap' }}>
@@ -588,18 +427,11 @@ export default function AdminSettings() {
           title={`新增预览：${previewType} ${previewProjects.length} 条`}
           style={{ marginTop: 16 }}
         >
-          <Table
-            size="middle"
-            columns={previewColumns}
-            dataSource={previewRows}
-            rowKey="key"
+          <ProjectTable
+            projects={previewProjects}
+            projectType={previewType}
+            hiddenColumnKeys={previewHiddenColumnKeys}
             pagination={false}
-            scroll={isAscendPreview ? undefined : { x: 1600 }}
-            expandable={{ defaultExpandAllRows: false, indentSize: 0 }}
-            onRow={(record) => {
-              if (record.isVersion) return { style: { background: '#f9fafb' } };
-              return { style: { cursor: 'pointer' } };
-            }}
           />
         </Card>
       )}

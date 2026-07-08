@@ -61,13 +61,16 @@ export default function AppLayout() {
   const ascendCount = projects.filter(p => p.type === '昇腾').length;
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
       <Sider
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
         width={200}
         style={{
+          height: '100vh',
+          overflow: 'auto',
+          overscrollBehavior: 'contain',
           background: '#001529',
           borderRight: '1px solid rgba(255,255,255,0.06)',
         }}
@@ -103,7 +106,7 @@ export default function AppLayout() {
           style={{ borderInlineEnd: 'none' }}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ height: '100vh', minWidth: 0, overflow: 'hidden' }}>
         <Header style={{
           background: '#fff',
           padding: '0 24px',
@@ -128,7 +131,7 @@ export default function AppLayout() {
             )}
           </div>
         </Header>
-        <Content style={{ padding: 24, overflow: 'auto' }}>
+        <Content style={{ height: 'calc(100vh - 64px)', padding: 24, overflow: 'auto', overscrollBehavior: 'contain' }}>
           <Outlet />
         </Content>
       </Layout>

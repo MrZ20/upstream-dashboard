@@ -26,11 +26,11 @@ export interface Project {
   type: ProjectType;
   category: string;
   upstream?: string;
-  upstreamVersion?: string;
+  latestVersion?: string;
   description?: string;
   maintainer?: Maintainer;
   branch?: string;
-  versions: VersionInfo[];
+  supportedVersions: VersionInfo[];
 }
 
 export interface SummaryStats {

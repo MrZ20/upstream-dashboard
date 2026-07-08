@@ -15,10 +15,10 @@ function getStats(projects: Project[]): SummaryStats {
   let fullyIntegrated = 0;
 
   for (const p of projects) {
-    totalVersions += p.versions.length;
-    if (p.versions.length >= 2) fullyIntegrated++;
+    totalVersions += p.supportedVersions.length;
+    if (p.supportedVersions.length >= 2) fullyIntegrated++;
 
-    const latest = p.versions[0];
+    const latest = p.supportedVersions[0];
     if (latest) {
       if (latest.functional != null) {
         totalFunctional++;
@@ -145,7 +145,7 @@ export default function Overview() {
   }
 
   const riskData = projects.flatMap(p =>
-    p.versions
+    p.supportedVersions
       .filter(v => {
         if (p.type === '昇腾') return v.ci === 'fail';
         return v.functional === 'fail' || v.performance === 'regression';

@@ -40,15 +40,15 @@ function normalizeProject(domain: ProjectDomain, project: any) {
     type: domain === 'kunpeng' ? '鲲鹏' : '昇腾',
     category: String(project.category || ''),
     maintainer: project.maintainer,
-    versions: Array.isArray(project.versions) ? project.versions : [],
+    supportedVersions: Array.isArray(project.supportedVersions) ? project.supportedVersions : [],
   };
 
   if (domain === 'kunpeng') {
     return {
       ...base,
       upstream: String(project.upstream || ''),
-      upstreamVersion: String(project.upstreamVersion || ''),
-      versions: base.versions.map((version: any) => ({
+      latestVersion: String(project.latestVersion || ''),
+      supportedVersions: base.supportedVersions.map((version: any) => ({
         version: String(version.version || ''),
         openEuler: String(version.openEuler || ''),
         hardware: String(version.hardware || ''),
@@ -64,7 +64,7 @@ function normalizeProject(domain: ProjectDomain, project: any) {
   return {
     ...base,
     branch: String(project.branch || 'main'),
-    versions: base.versions.map((version: any) => ({
+    supportedVersions: base.supportedVersions.map((version: any) => ({
       version: String(version.version || ''),
       hardware: String(version.hardware || ''),
       ci: version.ci ?? null,

@@ -30,6 +30,43 @@ function domainFromType(type: ProjectType) {
   return type === '昇腾' ? 'ascend' : 'kunpeng';
 }
 
+function splitMultiValue(value?: string) {
+  return (value || '')
+    .split(';')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function joinUniqueValues(values: Array<string | undefined>) {
+  return [...new Set(values.flatMap(splitMultiValue))].join('; ');
+}
+
+function latestDate(values: Array<string | null | undefined>) {
+  const sorted = values.filter(Boolean).sort();
+  return sorted.length ? sorted[sorted.length - 1] : null;
+}
+
+function mergeAscendVersions(supportedVersions: VersionInfo[]): VersionInfo[] {
+  if (!supportedVersions.length) return [];
+
+  const base = supportedVersions[0];
+  const targetCi: VersionInfo['ci'] = supportedVersions.some(version => version.ci === 'fail')
+    ? 'fail'
+    : supportedVersions.some(version => version.ci === 'pass')
+      ? 'pass'
+      : null;
+  const targetDates = supportedVersions
+    .filter(version => targetCi == null || version.ci === targetCi)
+    .map(version => version.ciDate);
+
+  return [{
+    ...base,
+    hardware: joinUniqueValues(supportedVersions.map(version => version.hardware)),
+    ci: targetCi,
+    ciDate: latestDate(targetDates),
+  }];
+}
+
 function normalizeVersion(projectType: ProjectType, version: VersionInfo): VersionInfo {
   const base = {
     version: version.version,
@@ -62,7 +99,9 @@ function normalizeProject(project: Project): Project {
     type: project.type,
     category: project.category,
     maintainer: project.maintainer,
-    versions: project.versions.map(version => normalizeVersion(project.type, version)),
+    supportedVersions: project.type === '昇腾'
+      ? mergeAscendVersions(project.supportedVersions.map(version => normalizeVersion(project.type, version)))
+      : project.supportedVersions.map(version => normalizeVersion(project.type, version)),
   };
 
   if (project.type === '鲲鹏') {
@@ -70,7 +109,7 @@ function normalizeProject(project: Project): Project {
       ...base,
       type: '鲲鹏',
       upstream: project.upstream || '',
-      upstreamVersion: project.upstreamVersion || '',
+      latestVersion: project.latestVersion || '',
     };
   }
 
@@ -78,6 +117,7 @@ function normalizeProject(project: Project): Project {
     ...base,
     type: '昇腾',
     branch: project.branch || 'main',
+    upstream: project.upstream || '',
   };
 }
 
@@ -158,29 +198,35 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       case 'ADD_VERSION': {
         const current = projects.find(p => p.id === action.payload.projectId);
         if (!current) return;
-        const versions = [
-          ...current.versions,
+        const supportedVersions = [
+          ...current.supportedVersions,
           normalizeVersion(current.type, action.payload.version),
         ];
-        versions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
-        await saveProject({ ...current, versions: versions });
+        supportedVersions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
+        await saveProject({
+          ...current,
+          supportedVersions: current.type === '昇腾' ? mergeAscendVersions(supportedVersions) : supportedVersions,
+        });
         return;
       }
       case 'UPDATE_VERSION': {
         const current = projects.find(p => p.id === action.payload.projectId);
         if (!current) return;
-        const versions = [...current.versions];
-        versions[action.payload.versionIndex] = normalizeVersion(current.type, action.payload.version);
-        versions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
-        await saveProject({ ...current, versions: versions });
+        const supportedVersions = [...current.supportedVersions];
+        supportedVersions[action.payload.versionIndex] = normalizeVersion(current.type, action.payload.version);
+        supportedVersions.sort((a, b) => b.version.localeCompare(a.version, undefined, { numeric: true }));
+        await saveProject({
+          ...current,
+          supportedVersions: current.type === '昇腾' ? mergeAscendVersions(supportedVersions) : supportedVersions,
+        });
         return;
       }
       case 'DELETE_VERSION': {
         const current = projects.find(p => p.id === action.payload.projectId);
         if (!current) return;
-        const versions = [...current.versions];
-        versions.splice(action.payload.versionIndex, 1);
-        await saveProject({ ...current, versions: versions });
+        const supportedVersions = [...current.supportedVersions];
+        supportedVersions.splice(action.payload.versionIndex, 1);
+        await saveProject({ ...current, supportedVersions: supportedVersions });
         return;
       }
       default:

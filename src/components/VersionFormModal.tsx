@@ -4,6 +4,20 @@ import dayjs from 'dayjs';
 import { VersionInfo } from '../types';
 import { useProjects } from '../contexts/ProjectContext';
 
+function splitMultiValue(value?: string) {
+  return (value || '')
+    .split(';')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function joinMultiValue(value?: string | string[]) {
+  if (Array.isArray(value)) {
+    return value.map(item => item.trim()).filter(Boolean).join('; ');
+  }
+  return splitMultiValue(value).join('; ');
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -24,8 +38,8 @@ export default function VersionFormModal({ open, onClose, projectId, editVersion
       if (editVersion) {
         form.setFieldsValue({
           version: editVersion.version,
-          openEuler: editVersion.openEuler,
-          hardware: editVersion.hardware,
+          openEuler: splitMultiValue(editVersion.openEuler),
+          hardware: splitMultiValue(editVersion.hardware),
           functional: editVersion.functional,
           performance: editVersion.performance,
           ci: editVersion.ci,
@@ -45,7 +59,7 @@ export default function VersionFormModal({ open, onClose, projectId, editVersion
     const values = await form.validateFields();
     const base = {
       version: values.version,
-      hardware: values.hardware,
+      hardware: joinMultiValue(values.hardware),
       integratedDate: values.integratedDate.format('YYYY-MM-DD'),
     };
     const version: VersionInfo = isAscend
@@ -56,7 +70,7 @@ export default function VersionFormModal({ open, onClose, projectId, editVersion
         }
       : {
           ...base,
-          openEuler: values.openEuler,
+          openEuler: joinMultiValue(values.openEuler),
           functional: values.functional || null,
           functionalDate: values.functionalDate ? values.functionalDate.format('YYYY-MM-DD') : null,
           performance: values.performance || null,
@@ -88,10 +102,15 @@ export default function VersionFormModal({ open, onClose, projectId, editVersion
           <Input placeholder="如：2.38" />
         </Form.Item>
         <Form.Item name="hardware" label="硬件型号" rules={[{ required: true }]}>
-          <Select options={(isAscend
-            ? ['Ascend 910B', 'Ascend 910C', 'Ascend 310P', 'Ascend 910', 'Ascend 910 Pro']
-            : ['Kunpeng 920', 'Kunpeng 920B', 'Kunpeng 920C', 'Kunpeng 916', 'Kunpeng 930']
-          ).map(v => ({ label: v, value: v }))} />
+          <Select
+            mode="tags"
+            tokenSeparators={[';']}
+            placeholder="可输入多个，使用分号分隔"
+            options={(isAscend
+              ? ['Ascend 910B', 'Ascend 910C', 'Ascend 310P', 'Ascend 910', 'Ascend 910 Pro']
+              : ['Kunpeng 920', 'Kunpeng 920B', 'Kunpeng 920C', 'Kunpeng 916', 'Kunpeng 930']
+            ).map(v => ({ label: v, value: v }))}
+          />
         </Form.Item>
         {isAscend ? (
           <>
@@ -107,10 +126,15 @@ export default function VersionFormModal({ open, onClose, projectId, editVersion
         ) : (
           <>
             <Form.Item name="openEuler" label="openEuler 版本" rules={[{ required: true }]}>
-              <Select options={[
-                'openEuler 22.03 LTS', 'openEuler 22.03 LTS SP1', 'openEuler 22.03 LTS SP2',
-                'openEuler 22.03 LTS SP3', 'openEuler 24.03 LTS',
-              ].map(v => ({ label: v, value: v }))} />
+              <Select
+                mode="tags"
+                tokenSeparators={[';']}
+                placeholder="可输入多个，使用分号分隔"
+                options={[
+                  'openEuler 22.03 LTS', 'openEuler 22.03 LTS SP1', 'openEuler 22.03 LTS SP2',
+                  'openEuler 22.03 LTS SP3', 'openEuler 24.03 LTS',
+                ].map(v => ({ label: v, value: v }))}
+              />
             </Form.Item>
             <Form.Item name="functional" label="功能测试">
               <Select allowClear placeholder="未测试" options={[
