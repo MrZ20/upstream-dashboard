@@ -73,16 +73,25 @@ npm run preview
 
 然后访问终端输出的预览地址。
 
-## GitHub Pages 部署思路
+## GitHub Pages 部署
 
-常见做法是在 GitHub Actions 中执行：
+仓库已经包含 GitHub Actions 工作流：
 
-```bash
-npm ci
-npm run build
+- `.github/workflows/deploy.yml`：push 到 `main` 时构建并发布正式站点。
+- `.github/workflows/preview.yml`：创建或更新 PR 时构建独立预览，路径形如 `https://<owner>.github.io/<repo>/pr-preview/pr-123/`；PR 关闭时自动清理预览。
+
+GitHub 仓库需要做两项设置：
+
+1. `Settings -> Pages -> Build and deployment -> Source` 选择 `Deploy from a branch`，分支选择 `gh-pages`，目录选择 `/ (root)`。
+2. `Settings -> Actions -> General -> Workflow permissions` 选择 `Read and write permissions`，允许 workflow 写入 `gh-pages` 分支并评论 PR 预览地址。
+
+正式站点地址通常是：
+
+```text
+https://<owner>.github.io/<repo>/
 ```
 
-随后把 `dist/` 发布到 GitHub Pages。每次数据 JSON 或代码合入主分支后，重新构建即可得到最新页面。
+如果之后绑定自定义域名，可以在 workflow 中把 `VITE_BASE_PATH` 调整为 `/`。
 
 ## 常用页面
 

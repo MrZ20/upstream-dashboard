@@ -13,7 +13,7 @@ export default function App() {
     <ProjectProvider>
       <ConfigProvider locale={zhCN} theme={theme}>
         <AntApp>
-          <BrowserRouter>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
             <Routes>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Navigate to="/overview" replace />} />
