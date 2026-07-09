@@ -57,14 +57,13 @@ export default function MaintainerTag({ maintainer }: { maintainer: Maintainer }
       )}
     >
       <Tag
-        color="blue"
         onClick={handleCopy}
         onMouseDown={event => event.stopPropagation()}
         role="button"
         tabIndex={0}
         title={copyValue}
         aria-label={`复制维护者信息: ${copyValue}`}
-        style={{ fontSize: 11, cursor: 'pointer', userSelect: 'none' }}
+        className="maintainer-tag"
       >
         <UserOutlined /> {maintainer.name} <CopyOutlined />
       </Tag>

@@ -22,38 +22,51 @@ export default function OverviewPage() {
   const knCount = kunpengStats.totalProjects;
   const asCount = ascendStats.totalProjects;
 
-  const kunpengPieOption = {
-    tooltip: { trigger: 'item' as const, formatter: '{b}: {c} ({d}%)' },
-    title: { text: '鲲鹏分类', left: 'center', top: 5, textStyle: { fontSize: 13 } },
-    legend: { type: 'scroll' as const, orient: 'vertical', right: 10, top: 30, bottom: 20, textStyle: { fontSize: 10 } },
-    series: [{
-      type: 'pie', radius: ['40%', '68%'], center: ['35%', '55%'],
-      itemStyle: { borderRadius: 3, borderColor: '#fff', borderWidth: 1 },
-      label: { show: false },
-      data: Object.entries(kunpengCats).map(([name, value]) => ({ name, value })),
-    }],
-  };
+  const chartColors = ['#5932EA', '#00B087', '#16C098', '#F59E0B', '#DF0404', '#60A5FA', '#A78BFA', '#F472B6', '#94A3B8'];
 
-  const ascendPieOption = {
-    tooltip: { trigger: 'item' as const, formatter: '{b}: {c} ({d}%)' },
-    title: { text: '昇腾分类', left: 'center', top: 5, textStyle: { fontSize: 13 } },
-    legend: { type: 'scroll' as const, orient: 'vertical', right: 10, top: 30, bottom: 20, textStyle: { fontSize: 10 } },
+  const createPieOption = (title: string, data: Record<string, number>) => ({
+    color: chartColors,
+    tooltip: {
+      trigger: 'item' as const,
+      formatter: '{b}: {c} ({d}%)',
+      backgroundColor: '#ffffff',
+      borderColor: '#eeeeee',
+      textStyle: { color: '#292d32', fontFamily: 'Poppins' },
+    },
+    title: {
+      text: title,
+      left: 22,
+      top: 2,
+      textStyle: { fontSize: 18, fontWeight: 600, color: '#000000', fontFamily: 'Poppins' },
+    },
+    legend: {
+      type: 'scroll' as const,
+      orient: 'vertical',
+      right: 14,
+      top: 52,
+      bottom: 20,
+      icon: 'circle',
+      itemWidth: 8,
+      itemHeight: 8,
+      textStyle: { fontSize: 11, color: '#9197b3', fontFamily: 'Poppins' },
+    },
     series: [{
-      type: 'pie', radius: ['40%', '68%'], center: ['35%', '55%'],
-      itemStyle: { borderRadius: 3, borderColor: '#fff', borderWidth: 1 },
+      type: 'pie',
+      radius: ['44%', '70%'],
+      center: ['35%', '58%'],
+      itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 3 },
       label: { show: false },
-      data: Object.entries(ascendCats).map(([name, value]) => ({ name, value })),
+      data: Object.entries(data).map(([name, value]) => ({ name, value })),
     }],
-  };
+  });
+
+  const kunpengPieOption = createPieOption('鲲鹏分类', kunpengCats);
+  const ascendPieOption = createPieOption('昇腾分类', ascendCats);
 
   const riskColumns: any[] = [
     { title: '项目名称', dataIndex: 'name', key: 'name', width: 200, ellipsis: true },
     { title: '类型', dataIndex: 'type', key: 'type', width: 60, render: (t: string) => <Tag color={t === '鲲鹏' ? 'blue' : 'cyan'}>{t}</Tag> },
     { title: '分类', dataIndex: 'category', key: 'cat', width: 110, render: (c: string) => <Tag>{c}</Tag> },
-    {
-      title: '维护人', dataIndex: 'maintainer', key: 'maintainer', width: 100,
-      render: (m: { name: string } | undefined) => m ? <Tag color="green"><UserOutlined /> {m.name}</Tag> : <span style={{ color: '#ccc' }}>未设置</span>,
-    },
     { title: '版本', dataIndex: 'version', key: 'ver', width: 100, render: (v: string) => <Tag color="blue">{v}</Tag> },
     {
       title: '异常类型', key: 'issue', width: 160,
@@ -69,18 +82,14 @@ export default function OverviewPage() {
         );
       },
     },
+    {
+      title: '维护人', dataIndex: 'maintainer', key: 'maintainer', width: 100,
+      render: (m: { name: string } | undefined) => m ? <Tag color="green"><UserOutlined /> {m.name}</Tag> : <span style={{ color: '#ccc' }}>未设置</span>,
+    },
   ];
 
 
   const riskData = useMemo(() => getRiskItems(projects), [projects]);
-
-  const metricCellStyle: CSSProperties = {
-    height: '100%',
-    padding: '12px 14px',
-    border: '1px solid #eef2f7',
-    borderRadius: 6,
-    background: '#fafbfc',
-  };
 
   const renderMetric = (
     title: string,
@@ -91,7 +100,7 @@ export default function OverviewPage() {
     span = 12,
   ) => (
     <Col xs={24} sm={span}>
-      <div style={metricCellStyle}>
+      <div className="metric-cell">
         <Statistic
           title={title}
           value={value}
@@ -104,60 +113,60 @@ export default function OverviewPage() {
   );
 
   return (
-    <div>
-      <Row gutter={[16, 16]}>
+    <div className="overview-page">
+      <Row gutter={[20, 20]}>
         <Col xs={24} xl={12}>
-          <Card title="鲲鹏" style={{ borderTop: '3px solid #0066CC', height: '100%' }}>
+          <Card title="鲲鹏" className="overview-domain-card overview-domain-card-kunpeng">
             <Row gutter={[12, 12]}>
               {renderMetric('项目总数', knCount, '个')}
               {renderMetric(
                 '性能通过率',
                 kunpengStats.performancePassRate,
                 '%',
-                { color: kunpengStats.performancePassRate >= 70 ? '#3f8600' : '#cf1322' },
+                { color: kunpengStats.performancePassRate >= 70 ? '#00AC4F' : '#D0004B' },
                 1,
               )}
               {renderMetric(
                 '功能通过率',
                 kunpengStats.functionalPassRate,
                 '%',
-                { color: kunpengStats.functionalPassRate >= 80 ? '#3f8600' : '#cf1322' },
+                { color: kunpengStats.functionalPassRate >= 80 ? '#00AC4F' : '#D0004B' },
                 1,
               )}
-              {renderMetric('性能回退', kunpengStats.regressionCount, '个', { color: '#cf1322' })}
+              {renderMetric('性能回退', kunpengStats.regressionCount, '个', { color: '#D0004B' })}
             </Row>
           </Card>
         </Col>
         <Col xs={24} xl={12}>
-          <Card title="昇腾" style={{ borderTop: '3px solid #13c2c2', height: '100%' }}>
+          <Card title="昇腾" className="overview-domain-card overview-domain-card-ascend">
             <Row gutter={[12, 12]}>
               {renderMetric('项目总数', asCount, '个', undefined, undefined, 24)}
               {renderMetric(
                 'CI通过率',
                 ascendStats.ciPassRate,
                 '%',
-                { color: ascendStats.ciPassRate >= 80 ? '#3f8600' : '#cf1322' },
+                { color: ascendStats.ciPassRate >= 80 ? '#00AC4F' : '#D0004B' },
                 1,
               )}
-              {renderMetric('CI不通过', ascendStats.ciFailCount, '个', { color: '#cf1322' })}
+              {renderMetric('CI不通过', ascendStats.ciFailCount, '个', { color: '#D0004B' })}
             </Row>
           </Card>
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+      <Row gutter={[20, 20]} className="overview-section">
         <Col span={12}>
-          <Card style={{ height: 380 }}><ReactECharts option={kunpengPieOption} style={{ height: 340 }} /></Card>
+          <Card className="chart-card"><ReactECharts option={kunpengPieOption} style={{ height: 340 }} /></Card>
         </Col>
         <Col span={12}>
-          <Card style={{ height: 380 }}><ReactECharts option={ascendPieOption} style={{ height: 340 }} /></Card>
+          <Card className="chart-card"><ReactECharts option={ascendPieOption} style={{ height: 340 }} /></Card>
         </Col>
       </Row>
 
-      <Row style={{ marginTop: 16 }}>
+      <Row className="overview-section">
         <Col span={24}>
-          <Card title="待关注项（功能失败 / 性能回退）">
-            <Table columns={riskColumns} dataSource={riskData} pagination={false} size="small" locale={{ emptyText: '无异常项' }} />
+          <Card title="待关注项（功能失败 / 性能回退）" className="risk-card">
+            <Table className="project-table risk-table" columns={riskColumns} dataSource={riskData} pagination={false} size="small" locale={{ emptyText: '无异常项' }} />
           </Card>
         </Col>
       </Row>

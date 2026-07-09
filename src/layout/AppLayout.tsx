@@ -4,9 +4,9 @@ import { Layout, Menu, Typography } from 'antd';
 import {
   DashboardOutlined,
   TableOutlined,
-  SettingOutlined,
   ClusterOutlined,
   CloudServerOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useProjects } from '../domain/projectStore';
@@ -52,67 +52,58 @@ export default function AppLayout() {
   const ascendCount = projects.filter(p => p.type === '昇腾').length;
 
   return (
-    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+    <Layout className="app-shell">
       <Sider
         collapsible
         collapsed={collapsed}
+        collapsedWidth={86}
         onCollapse={setCollapsed}
-        width={200}
-        style={{
-          height: '100vh',
-          overflow: 'auto',
-          overscrollBehavior: 'contain',
-          background: '#001529',
-          borderRight: '1px solid rgba(255,255,255,0.06)',
-        }}
+        width={248}
+        className={collapsed ? 'app-sider app-sider-collapsed' : 'app-sider'}
       >
-        <div style={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-        }}>
+        <div className="app-brand">
           {collapsed ? (
-            <SettingOutlined style={{ fontSize: 24, color: '#0066CC' }} />
+            <div className="app-brand-mark app-brand-mark-collapsed">
+              <AppstoreOutlined />
+            </div>
           ) : (
-            <div style={{ textAlign: 'center' }}>
-              <Text strong style={{ color: '#fff', fontSize: 15 }}>
-                开源项目支持看板
-              </Text>
-              <br />
-              <Text style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11 }}>
-                鲲鹏 {kunpengCount} + 昇腾 {ascendCount}
-              </Text>
+            <div className="app-brand-full">
+              <div className="app-brand-mark">
+                <AppstoreOutlined />
+              </div>
+              <div className="app-brand-copy">
+                <Text strong className="app-brand-title">
+                  开源项目支持看板
+                </Text>
+                <Text className="app-brand-meta">
+                  鲲鹏 {kunpengCount} + 昇腾 {ascendCount}
+                </Text>
+              </div>
             </div>
           )}
         </div>
         <Menu
-          theme="dark"
+          theme="light"
           mode="inline"
           selectedKeys={selectedKeys}
           defaultOpenKeys={['/software']}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
-          style={{ borderInlineEnd: 'none' }}
+          className="app-menu"
         />
       </Sider>
-      <Layout style={{ height: '100vh', minWidth: 0, overflow: 'hidden' }}>
-        <Header style={{
-          background: '#fff',
-          padding: '0 24px',
-          borderBottom: '1px solid #f0f0f0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
-          <Text strong style={{ fontSize: 16 }}>{pageTitle}</Text>
-          <Text type="secondary" style={{ fontSize: 13 }}>
+      <Layout className="app-main">
+        <Header className="app-header">
+          <div className="app-header-copy">
+            <Text className="app-header-eyebrow">Open Source Support</Text>
+            <Text strong className="app-header-title">{pageTitle}</Text>
+          </div>
+          <Text className="app-header-meta">
             {new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
             &nbsp;&nbsp;|&nbsp;&nbsp;鲲鹏 {kunpengCount} + 昇腾 {ascendCount} = 共 {kunpengCount + ascendCount} 个项目
           </Text>
         </Header>
-        <Content style={{ height: 'calc(100vh - 64px)', padding: 24, overflow: 'auto', overscrollBehavior: 'contain' }}>
+        <Content className="app-content">
           <Outlet />
         </Content>
       </Layout>

@@ -1,17 +1,22 @@
 import { Project, VersionInfo } from './projectTypes';
 
-export const funcColor: Record<string, string> = { pass: '#16A34A', fail: '#DC2626' };
+export const funcColor: Record<string, string> = { pass: 'green', fail: 'red' };
 export const funcText: Record<string, string> = { pass: '通过', fail: '不通过' };
-export const perfColor: Record<string, string> = { improvement: '#16A34A', stable: '#2563EB', regression: '#DC2626' };
+export const perfColor: Record<string, string> = { improvement: 'green', stable: 'blue', regression: 'red' };
 export const perfText: Record<string, string> = { improvement: '提升', stable: '持平', regression: '回退' };
 
 const validationOverviewColors = {
-  green: '#16A34A',
-  yellow: '#F59E0B',
-  red: '#DC2626',
-  neutral: '#F3F4F6',
+  green: '#E7FAF4',
+  yellow: '#FFF3D6',
+  red: '#FFE7E7',
+  neutral: '#F5F5F5',
 };
-const validationOverviewNeutralText = '#6B7280';
+const validationOverviewTextColors = {
+  green: '#008767',
+  yellow: '#B45309',
+  red: '#D0004B',
+  neutral: '#9197B3',
+};
 
 
 export function isLongText(text: string, maxLength = 28) {
@@ -60,7 +65,7 @@ export function getValidationOverview(project: Project) {
       total,
       goodCount,
       color: validationOverviewColors.neutral,
-      textColor: validationOverviewNeutralText,
+      textColor: validationOverviewTextColors.neutral,
     };
   }
 
@@ -69,7 +74,7 @@ export function getValidationOverview(project: Project) {
       total,
       goodCount,
       color: validationOverviewColors.green,
-      textColor: '#fff',
+      textColor: validationOverviewTextColors.green,
     };
   }
 
@@ -78,7 +83,7 @@ export function getValidationOverview(project: Project) {
       total,
       goodCount,
       color: validationOverviewColors.yellow,
-      textColor: '#fff',
+      textColor: validationOverviewTextColors.yellow,
     };
   }
 
@@ -86,6 +91,6 @@ export function getValidationOverview(project: Project) {
     total,
     goodCount,
     color: validationOverviewColors.red,
-    textColor: '#fff',
+    textColor: validationOverviewTextColors.red,
   };
 }

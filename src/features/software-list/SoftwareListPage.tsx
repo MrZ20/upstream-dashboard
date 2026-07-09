@@ -23,20 +23,22 @@ export default function SoftwareList() {
   const hasExpandableRows = projectType !== '昇腾' && filtered.some(project => project.supportedVersions.length > 1);
 
   return (
-    <div>
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <Input
-            placeholder="搜索项目名称..."
-            prefix={<SearchOutlined />}
-            value={search}
-            onChange={event => setSearch(event.target.value)}
-            style={{ width: 260 }}
-            allowClear
-          />
-          <span style={{ color: '#999', fontSize: 13 }}>共 {filtered.length} 个项目</span>
-          <div style={{ flex: 1 }} />
+    <div className="software-page">
+      <div className="software-panel">
+        <div className="software-toolbar">
+          <div className="software-toolbar-main">
+            <Input
+              className="software-search"
+              placeholder="搜索项目名称..."
+              prefix={<SearchOutlined />}
+              value={search}
+              onChange={event => setSearch(event.target.value)}
+              allowClear
+            />
+            <span className="software-count">共 {filtered.length} 个项目</span>
+          </div>
           <Button
+            className="soft-action-button"
             size="small"
             icon={expandAllRows ? <UpOutlined /> : <DownOutlined />}
             disabled={!hasExpandableRows}
@@ -45,13 +47,13 @@ export default function SoftwareList() {
             {expandAllRows ? '收起全部' : '展开全部'}
           </Button>
         </div>
+        <ProjectTable
+          projects={filtered}
+          projectType={projectType}
+          loading={loading}
+          expandAllRows={expandAllRows}
+        />
       </div>
-      <ProjectTable
-        projects={filtered}
-        projectType={projectType}
-        loading={loading}
-        expandAllRows={expandAllRows}
-      />
     </div>
   );
 }

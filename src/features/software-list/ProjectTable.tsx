@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
 import { Space, Table, Tag, Tooltip } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
@@ -22,10 +22,10 @@ import {
 import MaintainerTag from './MaintainerTag';
 import { buildProjectRows, type ProjectTableRow } from './tableRows';
 
-const catColor = 'blue';
-const eulerColor = 'blue';
-const hwColor = 'blue';
-const upstreamColor = 'blue';
+const catColor: string | undefined = undefined;
+const eulerColor: string | undefined = undefined;
+const hwColor: string | undefined = undefined;
+const upstreamColor: string | undefined = undefined;
 const textEllipsisThreshold = 28;
 const defaultNameColumnWidth = 280;
 const minNameColumnWidth = 180;
@@ -36,7 +36,7 @@ interface ProjectTableProps {
   projects: Project[];
   projectType: ProjectType;
   loading?: boolean;
-  pagination?: false | { pageSize?: number; showSizeChanger?: boolean; showTotal?: (total: number) => string };
+  pagination?: false | TablePaginationConfig;
   expandAllRows?: boolean;
 }
 
@@ -45,7 +45,12 @@ export default function ProjectTable({
   projects,
   projectType,
   loading,
-  pagination = { pageSize: 50, showSizeChanger: true, showTotal: total => `共 ${total} 个项目` },
+  pagination = {
+    defaultPageSize: 50,
+    showSizeChanger: { placement: 'topRight', getPopupContainer: () => document.body },
+    pageSizeOptions: [10, 20, 50, 100],
+    showTotal: total => `共 ${total} 个项目`,
+  },
   expandAllRows = false,
 }: ProjectTableProps) {
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
@@ -206,9 +211,8 @@ export default function ProjectTable({
     const label = `v${version}`;
     const tag = (
       <Tag
-        color="blue"
-        className="truncated-tag"
-        style={{ maxWidth: 120, fontFamily: 'monospace', fontSize: 13 }}
+        className="truncated-tag version-tag"
+        style={{ maxWidth: 120 }}
       >
         {truncateText(label, 18)}
         {extra && <span style={{ color: '#999', fontSize: 11 }}>{extra}</span>}
@@ -299,7 +303,7 @@ export default function ProjectTable({
         if (!status) return <span style={{ color: '#ccc' }}>-</span>;
         return (
           <Tooltip title={record.functionalDate ? `测试日期: ${record.functionalDate}` : undefined}>
-            <Tag color={funcColor[status]}>{funcText[status]}{record.functionalDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.functionalDate}</span>}</Tag>
+            <Tag color={funcColor[status]} className={`status-tag status-${status}`}>{funcText[status]}{record.functionalDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.functionalDate}</span>}</Tag>
           </Tooltip>
         );
       },
@@ -315,7 +319,7 @@ export default function ProjectTable({
         const icon = status === 'improvement' ? <ArrowUpOutlined /> : status === 'regression' ? <ArrowDownOutlined /> : <MinusOutlined />;
         return (
           <Tooltip title={record.performanceDate ? `测试日期: ${record.performanceDate}` : undefined}>
-            <Tag color={perfColor[status]}>{icon} {perfText[status]}{record.performanceDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.performanceDate}</span>}</Tag>
+            <Tag color={perfColor[status]} className={`status-tag status-${status}`}>{icon} {perfText[status]}{record.performanceDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.performanceDate}</span>}</Tag>
           </Tooltip>
         );
       },
@@ -343,14 +347,14 @@ export default function ProjectTable({
       render: (status: string, record: ProjectTableRow) => {
         if (status === 'pass') {
           return (
-            <Tag color={funcColor.pass}>
+            <Tag color={funcColor.pass} className="status-tag status-pass">
               通过{record.ciDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.ciDate}</span>}
             </Tag>
           );
         }
         if (status === 'fail') {
           return (
-            <Tag color={funcColor.fail}>
+            <Tag color={funcColor.fail} className="status-tag status-fail">
               不通过{record.ciDate && <span style={{ fontSize: 10, marginLeft: 4, opacity: 0.8 }}>{record.ciDate}</span>}
             </Tag>
           );
@@ -387,14 +391,16 @@ export default function ProjectTable({
     total + (typeof column.width === 'number' ? column.width : 120)
   ), 0);
   const scrollX = Math.max(scrollWidth, 900);
+  const tableScroll = isAscend ? { y: 'calc(100vh - 318px)' } : { x: scrollX, y: 'calc(100vh - 318px)' };
 
   return (
     <Table
+      className="project-table"
       columns={columns}
       dataSource={treeData}
       rowKey="key"
       loading={loading}
-      scroll={isAscend ? undefined : { x: scrollX }}
+      scroll={tableScroll}
       pagination={pagination}
       size="middle"
       expandable={{
@@ -403,10 +409,19 @@ export default function ProjectTable({
         defaultExpandAllRows: false,
         indentSize: 0,
       }}
-      rowClassName={(record: ProjectTableRow) => [
-        record.groupIndex % 2 === 0 ? 'project-group-even' : 'project-group-odd',
-        record.isVersion ? 'version-sub-row' : 'project-main-row',
-      ].join(' ')}
+      rowClassName={(record: ProjectTableRow) => {
+        const isExpandedParent = !record.isVersion && visibleExpandedRowKeys.includes(record.key);
+        const isLastVersion = record.isVersion && record.versionIndex === record._project.supportedVersions.length - 1;
+        return [
+          'project-card-row',
+          record.groupIndex % 2 === 0 ? 'project-group-even' : 'project-group-odd',
+          record.isVersion ? 'version-sub-row project-card-child' : 'project-main-row',
+          isExpandedParent ? 'project-card-start' : '',
+          !record.isVersion && !isExpandedParent ? 'project-card-single' : '',
+          record.isVersion && isLastVersion ? 'project-card-end' : '',
+          record.isVersion && !isLastVersion ? 'project-card-middle' : '',
+        ].filter(Boolean).join(' ');
+      }}
       onRow={(record) => {
         if (record.isVersion) return {};
         return { style: { cursor: 'pointer' } };
