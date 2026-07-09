@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from
 import { Table } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 import { Project, ProjectType } from '../../domain/projectTypes';
-import type { ProjectRefreshScope } from '../../domain/projectStore';
+import type { ProjectRefreshScope } from '../../domain/projectTypes';
 import { buildProjectRows, type ProjectTableRow } from './tableRows';
 import { createProjectColumns } from './projectTableColumns';
 

@@ -8,9 +8,6 @@ export DATA_DIR SYNC_INTERVAL_SECONDS
 mkdir -p "$DATA_DIR"
 rm -f "$DATA_DIR/.sync.lock"
 
-if [ -f "$DATA_DIR/metadata.json" ] && grep -q '"source": "bundled-seed"' "$DATA_DIR/metadata.json"; then
-  rm -rf "$DATA_DIR/kunpeng" "$DATA_DIR/ascend" "$DATA_DIR/metadata.json"
-fi
 
 node /app/scripts/sync-server.mjs &
 

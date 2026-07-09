@@ -95,11 +95,9 @@ Vite 已把 `/api/data` 和 `/runtime-data` 代理到本地同步服务的 `3001
 
 Nginx 通过 `/runtime-data` 暴露容器内 `/project-data`，前端优先读取这里的数据。`metadata.json` 中的 `lastSyncedAt` 用于页面展示上次刷新时间。容器删除后这份运行时数据会一起删除，下次启动会重新从远端同步。
 
-仓库内的 `src/data` 现在只保留构建所需的空索引和格式模板：
+仓库内的 `src/data` 只保留格式模板：
 
 ```text
-src/data/kunpeng/_index.md
-src/data/ascend/_index.md
 src/data/templates/kunpeng.template.json
 src/data/templates/ascend.template.json
 ```

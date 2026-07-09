@@ -1,11 +1,10 @@
 # Data templates
 
-`src/data/kunpeng` and `src/data/ascend` only keep empty `_index.md` files for build-time fallback structure.
-They do not contain real dashboard data.
-
-Real runtime data is generated into the container-local `/project-data` directory by `scripts/sync-data.mjs` after sparse-cloning the remote data repository. The data is intentionally ephemeral and is re-synced when a new container starts.
+`src/data` no longer stores dashboard project data. Real data is generated into the container-local `/project-data` directory by `scripts/sync-data.mjs` after sparse-cloning the remote data repositories. The data is intentionally ephemeral and is re-synced when a new container starts.
 
 Reference JSON templates are kept here:
 
 - `templates/kunpeng.template.json`
 - `templates/ascend.template.json`
+
+The templates are documentation aids only and are not loaded by the page.

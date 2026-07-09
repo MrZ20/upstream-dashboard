@@ -1,4 +1,6 @@
 export type ProjectType = '鲲鹏' | '昇腾';
+export type ProjectDomain = 'kunpeng' | 'ascend';
+export type ProjectRefreshScope = 'all' | 'project' | 'ci';
 export type FuncStatus = 'pass' | 'fail';
 export type PerfStatus = 'improvement' | 'stable' | 'regression';
 
@@ -46,4 +48,10 @@ export interface SummaryStats {
   ciPassRate: number;
   ciFailCount: number;
   fullyIntegrated: number;
+}
+
+export interface DataMetadata {
+  lastSyncedAt?: string | null;
+  source?: string;
+  projectCounts?: Partial<Record<ProjectDomain, number>>;
 }

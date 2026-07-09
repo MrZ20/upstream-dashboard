@@ -33,7 +33,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { projects, lastUpdated, dataSource, refreshing, refreshingKey, error, refreshProjects } = useProjects();
+  const { projects, lastUpdated, refreshing, refreshingKey, error, refreshProjects } = useProjects();
   const menuItems: MenuItem[] = [
     { key: '/overview', icon: <DashboardOutlined />, label: '总览看板' },
     {
@@ -54,9 +54,7 @@ export default function AppLayout() {
   const ascendCount = projects.filter(p => p.type === '昇腾').length;
   const lastUpdatedText = lastUpdated
     ? new Date(lastUpdated).toLocaleString('zh-CN', { hour12: false })
-    : dataSource === 'bundled' && projects.length > 0
-      ? '内置数据'
-      : '等待同步';
+    : '等待同步';
 
 
   const renderRefreshButton = (
