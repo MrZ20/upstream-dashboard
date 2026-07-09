@@ -1,0 +1,38 @@
+{
+  "name": "X265",
+  "category": "基础库&加速库",
+  "upstream": "https://github.com/videolan/x265",
+  "latestVersion": "7.24.13",
+  "supportedVersions": [
+    {
+      "version": "12.8.7",
+      "openEuler": "openEuler 22.03 LTS SP1",
+      "hardware": "Kunpeng 930",
+      "functional": "pass",
+      "functionalDate": "2026-05-26",
+      "performance": "stable",
+      "performanceDate": "2026-06-16",
+      "integratedDate": "2026-03-09"
+    },
+    {
+      "version": "11.19.8",
+      "openEuler": "openEuler 22.03 LTS",
+      "hardware": "Kunpeng 916",
+      "functional": null,
+      "functionalDate": null,
+      "performance": "stable",
+      "performanceDate": "2026-06-19",
+      "integratedDate": "2025-10-13"
+    },
+    {
+      "version": "11.6.11",
+      "openEuler": "openEuler 22.03 LTS SP1",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-06-17",
+      "performance": "stable",
+      "performanceDate": "2026-06-06",
+      "integratedDate": "2026-03-28"
+    }
+  ]
+}

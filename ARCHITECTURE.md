@@ -1,28 +1,30 @@
 # 仓库架构与概要
 
-这份文档给第一次接触项目的人看。项目是一个在浏览器里运行的 openEuler + 鲲鹏/昇腾开源项目支持看板，展示项目分类、集成版本、硬件型号、验证结果和维护者信息。
+这份文档给第一次接触项目的人看。项目是一个静态 openEuler + 鲲鹏/昇腾开源项目支持看板，展示项目分类、集成版本、硬件型号、验证结果和维护者信息。
 
 ## 技术栈
 
 - React：渲染页面。
 - TypeScript：约束数据结构和组件参数。
-- Vite：本地开发服务器、构建工具，并提供开发期 JSON 写入 API。
-- Ant Design：表格、表单、弹窗、菜单等 UI 组件。
+- Vite：本地开发服务器和静态构建工具。
+- Ant Design：表格、菜单、筛选控件等 UI 组件。
 - ECharts：总览页分类图。
-- React Router：管理 `/overview`、`/software/kunpeng`、`/software/ascend`、`/admin/settings` 等路由。
+- React Router：管理 `/overview`、`/software/kunpeng`、`/software/ascend` 等路由。
 
 ## 数据在哪里
 
-项目数据只有两份 JSON：
+项目数据按类型和项目拆分为多个 JSON：
 
 ```text
-src/data/kunpengProjects.json
-src/data/ascendProjects.json
+src/data/kunpeng/_index.md
+src/data/kunpeng/<项目名称>.json
+src/data/ascend/_index.md
+src/data/ascend/<项目名称>.json
 ```
 
-鲲鹏和昇腾分开存储，各自只保留自己页面和验证流程需要的字段。页面通过 `ProjectContext` 访问数据，`ProjectContext` 通过 Vite 本地 API 读写 JSON 文件。
+鲲鹏和昇腾分开存储，各自只保留自己页面和验证流程需要的字段。`_index.md` 决定展示顺序。页面通过 `projectStore` 访问数据，`projectStore` 在 Vite 构建时用 `import.meta.glob` 合并这些项目 JSON。
 
-管理员登录态仍保存在浏览器 `localStorage` 的 `dashboard_auth` 中；项目数据不再保存在项目数据 localStorage 中。
+运行时不提供写入 API、管理员模式或页面内编辑能力。数据变更通过修改 JSON 文件并重新构建完成。
 
 ## 目录结构
 
@@ -36,26 +38,32 @@ src/data/ascendProjects.json
 ├── ARCHITECTURE.md
 └── src/
     ├── main.tsx
-    ├── App.tsx
-    ├── types/
-    │   └── index.ts
+    ├── app/
+    │   ├── App.tsx
+    │   └── theme.ts
+    ├── layout/
+    │   └── AppLayout.tsx
     ├── data/
-    │   ├── kunpengProjects.json
-    │   └── ascendProjects.json
-    ├── contexts/
-    │   ├── AuthContext.tsx
-    │   └── ProjectContext.tsx
-    ├── components/
-    │   ├── Layout.tsx
-    │   ├── AdminGate.tsx
-    │   ├── ProjectFormModal.tsx
-    │   ├── VersionFormModal.tsx
-    │   ├── MaintainerModal.tsx
-    │   └── MaintainerTag.tsx
-    ├── pages/
-    │   ├── Overview.tsx
-    │   ├── SoftwareList.tsx
-    │   └── AdminSettings.tsx
+    │   ├── kunpeng/
+    │   │   ├── _index.md
+    │   │   └── <项目名称>.json
+    │   └── ascend/
+    │       ├── _index.md
+    │       └── <项目名称>.json
+    ├── domain/
+    │   ├── projectTypes.ts
+    │   ├── projectStore.tsx
+    │   ├── projectNormalize.ts
+    │   ├── projectStats.ts
+    │   └── projectFormat.ts
+    ├── features/
+    │   ├── overview/
+    │   │   └── OverviewPage.tsx
+    │   └── software-list/
+    │       ├── SoftwareListPage.tsx
+    │       ├── ProjectTable.tsx
+    │       ├── MaintainerTag.tsx
+    │       └── tableRows.ts
     └── styles/
         └── global.css
 ```
@@ -65,68 +73,49 @@ src/data/ascendProjects.json
 ```text
 index.html
   -> src/main.tsx
-    -> src/App.tsx
-      -> AuthProvider
+    -> src/app/App.tsx
       -> ProjectProvider
       -> AppLayout
-        -> Overview / SoftwareList / AdminSettings
+        -> OverviewPage / SoftwareListPage
 ```
 
 数据流：
 
 ```text
-src/data/*.json
+src/data/{kunpeng,ascend}/_index.md + 项目 JSON
         |
         v
-Vite /api/projects
-        |
-        v
-ProjectContext
+projectStore 构建时按 _index.md 顺序合并，projectNormalize 规范化字段
         |
         v
 页面通过 useProjects() 读取 projects
         |
         v
-管理员新增/编辑/删除
-        |
-        v
-Vite API 写回对应 JSON 文件
+Vite build 生成 dist 静态产物
 ```
 
 ## 核心文件
 
 ### `vite.config.ts`
 
-除了 Vite 基础配置外，还注册了 `projects-json-api` 插件。它负责读取和写入 `src/data` 下的两个 JSON 文件。
+只保留 Vite + React 基础配置。项目不再注册开发期 JSON 写入 API。
 
-本地开发 API：
-
-- `GET /api/projects`：合并返回鲲鹏和昇腾项目。
-- `GET /api/projects/:domain`：读取单类项目，`:domain` 为 `kunpeng` 或 `ascend`。
-- `POST /api/projects/:domain`：新增项目并写入对应 JSON。
-- `PUT /api/projects/:domain/:id`：更新项目，必要时在两个 JSON 间移动。
-- `DELETE /api/projects/:domain/:id`：删除项目。
-
-### `src/contexts/ProjectContext.tsx`
+### `src/domain/projectStore.tsx`
 
 项目数据的前端入口。它负责：
 
-- 加载 `/api/projects`。
-- 将后端返回的项目列表放进 React 状态。
-- 提供 `dispatch` 给页面执行新增、编辑、删除、维护者设置、版本维护。
-- 在每次写入后重新加载数据。
+- 使用 `import.meta.glob` 在构建时读取项目 JSON。
+- 按 `_index.md` 顺序合并数据，并为项目生成运行时 `id`。
+- 调用 `projectNormalize.ts` 对页面所需字段做轻量规范化。
+- 提供 `useProjects()` 给总览和列表页面读取数据。
 
-### `src/types/index.ts`
+### `src/domain/projectTypes.ts`
 
-定义 `Project`、`VersionInfo`、`Maintainer` 等核心类型。
+定义 `Project`、`VersionInfo`、`Maintainer`、`SummaryStats` 等核心类型。
 
-### `src/pages/SoftwareList.tsx`
+### `src/features/software-list/SoftwareListPage.tsx`
 
-同时服务鲲鹏和昇腾软件列表。功能包括搜索、筛选、列显示控制、展开历史版本、项目名称列拖拽调宽、维护者复制、管理员操作列。
-
-### `src/pages/AdminSettings.tsx`
-
-管理员 JSON 添加页。输入 JSON 后先生成预览，再保存到对应数据文件。
+同时服务鲲鹏和昇腾软件列表。功能包括搜索、表头筛选、展开历史版本、项目名称列拖拽调宽和维护者复制。
 
 ## 页面说明
 
@@ -150,32 +139,26 @@ Vite API 写回对应 JSON 文件
 
 鲲鹏关注上游版本、openEuler 版本、功能验证和性能验证；昇腾关注看护分支、硬件型号和 CI 验证结果。
 
-### 管理员设置
-
-路径：`/admin/settings`
-
-只有进入管理员模式后才能看到。它用于通过 JSON 添加软件信息，并直接写入 `src/data` 下的对应文件。
-
 ## 当前限制
 
-- Vite 中的写 JSON API 主要面向本地开发和内部调试，不是生产后端。
-- 管理员密码写在前端代码中，不是安全权限系统。
+- 页面是静态站，运行时不能新增、编辑或删除数据。
+- 数据变更需要通过代码提交修改 JSON 文件，再重新构建 `dist/`。
 - 目前没有自动化测试目录，修改共享数据结构后需要至少运行 `npm run build` 或 `npx tsc --noEmit`。
 
 ## 关键决策
 
-1. 数据拆成 `kunpengProjects.json` 与 `ascendProjects.json`，两类项目不再共享无关字段。
-2. 页面读写统一走 `/api/projects`，不再使用旧的 `projectData.ts` 或项目数据 localStorage。
+1. 数据拆成 `src/data/kunpeng/` 与 `src/data/ascend/` 下的多项目 JSON，两类项目不再共享无关字段。
+2. 页面只在构建时静态合并 JSON 数据，不再使用本地 API、generated JSON 文件或 localStorage 保存项目数据。
 3. 功能验证只有通过/不通过，未填用 `null` 表示。
 4. 性能验证只有提升/持平/回退。
 5. 总览统计只看每个项目的最新支持版本，也就是 `supportedVersions[0]`。
-6. 管理员模式仍然是前端本地开关，真正权限控制需要后端接入后再补。
 
 ## 推荐阅读顺序
 
-1. `src/types/index.ts`
-2. `src/contexts/ProjectContext.tsx`
-3. `vite.config.ts`
-4. `src/pages/SoftwareList.tsx`
-5. `src/pages/Overview.tsx`
-6. `src/pages/AdminSettings.tsx`
+1. `src/domain/projectTypes.ts`
+2. `src/domain/projectStore.tsx`
+3. `src/domain/projectNormalize.ts`
+4. `src/features/software-list/SoftwareListPage.tsx`
+5. `src/features/software-list/ProjectTable.tsx`
+6. `src/features/overview/OverviewPage.tsx`
+7. `vite.config.ts`

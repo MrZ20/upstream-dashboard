@@ -1,0 +1,14 @@
+{
+  "name": "LlamaFactory",
+  "category": "训练加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "14.12.2",
+      "hardware": "Ascend 910C; Ascend 910B",
+      "ci": "fail",
+      "ciDate": "2026-06-24",
+      "integratedDate": "2025-11-26"
+    }
+  ]
+}

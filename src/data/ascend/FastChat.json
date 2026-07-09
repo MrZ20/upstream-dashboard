@@ -1,0 +1,14 @@
+{
+  "name": "FastChat",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "9.3.3",
+      "hardware": "Ascend 910C; Ascend 910B",
+      "ci": "pass",
+      "ciDate": "2026-06-20",
+      "integratedDate": "2025-12-13"
+    }
+  ]
+}

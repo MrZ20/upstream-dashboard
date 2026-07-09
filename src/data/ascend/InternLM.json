@@ -1,0 +1,14 @@
+{
+  "name": "InternLM",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "7.24.8",
+      "hardware": "Ascend 910C; Ascend 310P; Ascend 910B",
+      "ci": "fail",
+      "ciDate": "2026-06-21",
+      "integratedDate": "2025-11-17"
+    }
+  ]
+}

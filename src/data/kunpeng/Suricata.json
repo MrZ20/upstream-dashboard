@@ -1,0 +1,28 @@
+{
+  "name": "Suricata",
+  "category": "基础库&加速库",
+  "upstream": "https://github.com/OISF/suricata.git",
+  "latestVersion": "11.7.14",
+  "supportedVersions": [
+    {
+      "version": "14.12.2",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 920",
+      "functional": "pass",
+      "functionalDate": "2026-06-12",
+      "performance": "stable",
+      "performanceDate": "2026-06-19",
+      "integratedDate": "2025-11-26"
+    },
+    {
+      "version": "3.19.1",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 930",
+      "functional": "fail",
+      "functionalDate": "2026-06-11",
+      "performance": "stable",
+      "performanceDate": "2026-06-24",
+      "integratedDate": "2025-08-31"
+    }
+  ]
+}

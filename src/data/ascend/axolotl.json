@@ -1,0 +1,14 @@
+{
+  "name": "axolotl",
+  "category": "训练加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "7.20.14",
+      "hardware": "Ascend 910B; Ascend 910C",
+      "ci": "pass",
+      "ciDate": "2026-06-15",
+      "integratedDate": "2026-04-23"
+    }
+  ]
+}

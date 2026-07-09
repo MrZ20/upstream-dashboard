@@ -1,0 +1,14 @@
+{
+  "name": "diffusers",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "15.14.0",
+      "hardware": "Ascend 910",
+      "ci": "pass",
+      "ciDate": "2026-06-21",
+      "integratedDate": "2025-10-05"
+    }
+  ]
+}

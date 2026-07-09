@@ -1,0 +1,38 @@
+{
+  "name": "X264",
+  "category": "基础库&加速库",
+  "upstream": "https://code.videolan.org/videolan/x264",
+  "latestVersion": "6.13.7",
+  "supportedVersions": [
+    {
+      "version": "6.20.14",
+      "openEuler": "openEuler 22.03 LTS SP1",
+      "hardware": "Kunpeng 916",
+      "functional": "fail",
+      "functionalDate": "2026-06-21",
+      "performance": "regression",
+      "performanceDate": "2026-05-27",
+      "integratedDate": "2026-04-29"
+    },
+    {
+      "version": "4.5.1",
+      "openEuler": "openEuler 22.03 LTS SP2",
+      "hardware": "Kunpeng 920C",
+      "functional": "pass",
+      "functionalDate": "2026-06-09",
+      "performance": "improvement",
+      "performanceDate": "2026-06-20",
+      "integratedDate": "2025-11-09"
+    },
+    {
+      "version": "2.15.8",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-05-30",
+      "performance": null,
+      "performanceDate": null,
+      "integratedDate": "2026-01-17"
+    }
+  ]
+}

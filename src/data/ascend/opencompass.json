@@ -1,0 +1,14 @@
+{
+  "name": "opencompass",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "8.1.5",
+      "hardware": "Ascend 310P",
+      "ci": "pass",
+      "ciDate": "2026-06-23",
+      "integratedDate": "2026-02-03"
+    }
+  ]
+}

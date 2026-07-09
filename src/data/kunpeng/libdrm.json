@@ -1,0 +1,38 @@
+{
+  "name": "libdrm",
+  "category": "ARM应用支持",
+  "upstream": "https://gitlab.freedesktop.org/mesa/drm",
+  "latestVersion": "3.18.0",
+  "supportedVersions": [
+    {
+      "version": "14.3.3",
+      "openEuler": "openEuler 22.03 LTS",
+      "hardware": "Kunpeng 930",
+      "functional": "pass",
+      "functionalDate": "2026-06-19",
+      "performance": null,
+      "performanceDate": null,
+      "integratedDate": "2026-04-25"
+    },
+    {
+      "version": "4.16.2",
+      "openEuler": "openEuler 22.03 LTS SP3",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-06-22",
+      "performance": "stable",
+      "performanceDate": "2026-05-31",
+      "integratedDate": "2025-10-18"
+    },
+    {
+      "version": "1.15.12",
+      "openEuler": "openEuler 22.03 LTS SP1",
+      "hardware": "Kunpeng 930",
+      "functional": "fail",
+      "functionalDate": "2026-06-02",
+      "performance": "stable",
+      "performanceDate": "2026-06-21",
+      "integratedDate": "2026-04-23"
+    }
+  ]
+}

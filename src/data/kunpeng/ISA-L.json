@@ -1,0 +1,28 @@
+{
+  "name": "ISA-L",
+  "category": "基础库&加速库",
+  "upstream": "https://github.com/intel/isa-l",
+  "latestVersion": "7.21.13",
+  "supportedVersions": [
+    {
+      "version": "15.11.13",
+      "openEuler": "openEuler 22.03 LTS SP3",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-06-12",
+      "performance": "regression",
+      "performanceDate": "2026-06-22",
+      "integratedDate": "2025-07-24"
+    },
+    {
+      "version": "12.14.14",
+      "openEuler": "openEuler 22.03 LTS SP1",
+      "hardware": "Kunpeng 920C",
+      "functional": null,
+      "functionalDate": null,
+      "performance": "improvement",
+      "performanceDate": "2026-05-28",
+      "integratedDate": "2025-11-30"
+    }
+  ]
+}

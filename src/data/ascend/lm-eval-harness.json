@@ -1,0 +1,14 @@
+{
+  "name": "lm-eval-harness",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "14.0.6",
+      "hardware": "Ascend 910B; Ascend 910",
+      "ci": "fail",
+      "ciDate": "2026-06-24",
+      "integratedDate": "2026-06-23"
+    }
+  ]
+}

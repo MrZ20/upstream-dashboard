@@ -1,0 +1,28 @@
+{
+  "name": "EMU",
+  "category": "ARM应用支持",
+  "upstream": "https://github.com/treangenlab/emu",
+  "latestVersion": "12.1.1",
+  "supportedVersions": [
+    {
+      "version": "10.2.14",
+      "openEuler": "openEuler 22.03 LTS",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-06-14",
+      "performance": "regression",
+      "performanceDate": "2026-06-12",
+      "integratedDate": "2025-08-10"
+    },
+    {
+      "version": "1.24.11",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 920",
+      "functional": "pass",
+      "functionalDate": "2026-05-29",
+      "performance": "regression",
+      "performanceDate": "2026-06-23",
+      "integratedDate": "2025-08-05"
+    }
+  ]
+}

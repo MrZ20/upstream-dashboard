@@ -1,0 +1,28 @@
+{
+  "name": "Binder",
+  "category": "ARM应用支持",
+  "upstream": "https://github.com/kupferlauncher/keybinder",
+  "latestVersion": "3.14.11",
+  "supportedVersions": [
+    {
+      "version": "14.9.0",
+      "openEuler": "openEuler 22.03 LTS",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-06-18",
+      "performance": "stable",
+      "performanceDate": "2026-06-21",
+      "integratedDate": "2025-09-14"
+    },
+    {
+      "version": "9.20.4",
+      "openEuler": "openEuler 22.03 LTS",
+      "hardware": "Kunpeng 916",
+      "functional": "pass",
+      "functionalDate": "2026-05-31",
+      "performance": null,
+      "performanceDate": null,
+      "integratedDate": "2025-11-25"
+    }
+  ]
+}

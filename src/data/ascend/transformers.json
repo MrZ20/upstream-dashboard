@@ -1,0 +1,14 @@
+{
+  "name": "transformers",
+  "category": "训练加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "6.1.12",
+      "hardware": "Ascend 910",
+      "ci": "pass",
+      "ciDate": "2026-06-14",
+      "integratedDate": "2025-07-17"
+    }
+  ]
+}

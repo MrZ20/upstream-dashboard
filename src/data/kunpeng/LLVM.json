@@ -1,0 +1,28 @@
+{
+  "name": "LLVM",
+  "category": "ARM应用支持",
+  "upstream": "https://llvm.org/\nhttps://github.com/llvm/llvm-project",
+  "latestVersion": "4.0.11",
+  "supportedVersions": [
+    {
+      "version": "13.5.1",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 920C",
+      "functional": "pass",
+      "functionalDate": "2026-06-01",
+      "performance": "regression",
+      "performanceDate": "2026-05-30",
+      "integratedDate": "2026-05-19"
+    },
+    {
+      "version": "9.0.1",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 930",
+      "functional": "pass",
+      "functionalDate": "2026-06-20",
+      "performance": "stable",
+      "performanceDate": "2026-06-11",
+      "integratedDate": "2025-10-01"
+    }
+  ]
+}

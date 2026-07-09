@@ -1,6 +1,8 @@
 # upstream-dashboard
 
-这是一个基于 React + TypeScript + Vite + Ant Design + ECharts 的本地看板，用来查看 openEuler + 鲲鹏/昇腾相关开源项目的适配、版本、验证状态和维护者信息。
+这是一个基于 React + TypeScript + Vite + Ant Design + ECharts 的静态看板，用来查看 openEuler + 鲲鹏/昇腾相关开源项目的适配、版本、验证状态和维护者信息。
+
+项目适合部署到 GitHub Pages：页面在构建时读取 `src/data` 下按项目拆分的 JSON 数据，运行时不再提供新增、编辑、删除或管理员登录能力。需要更新数据时，直接修改项目 JSON 文件并重新构建即可。
 
 ## 环境要求
 
@@ -13,7 +15,7 @@
 
 ```bash
 git clone <your-repo-url>
-cd dashboard
+cd upstream-dashboard
 ```
 
 安装依赖：
@@ -34,9 +36,22 @@ npm run dev
 http://127.0.0.1:5173
 ```
 
-如果 5173 端口已被占用，Vite 会自动换到其他端口，例如 `5174`。
+如果 5173 端口已被占用，Vite 会自动换到其他端口。
 
-## 生成渲染产物
+## 数据维护
+
+项目数据按类型和项目拆分存放：
+
+```text
+src/data/kunpeng/_index.md
+src/data/kunpeng/<项目名称>.json
+src/data/ascend/_index.md
+src/data/ascend/<项目名称>.json
+```
+
+`_index.md` 决定该类型项目的展示顺序。项目 JSON 源文件不需要填写 `id` 和 `type`：`id` 在构建时按顺序生成，`type` 由所在目录推断。修改、新增或删除软件信息时，直接编辑对应项目 JSON，并同步调整 `_index.md`。页面运行时不会写回数据文件。
+
+## 生成静态页面
 
 执行生产构建：
 
@@ -58,34 +73,22 @@ npm run preview
 
 然后访问终端输出的预览地址。
 
-## 数据文件
+## GitHub Pages 部署思路
 
-项目数据存放在：
+常见做法是在 GitHub Actions 中执行：
 
-```text
-src/data/kunpengProjects.json
-src/data/ascendProjects.json
+```bash
+npm ci
+npm run build
 ```
 
-开发模式下，页面通过本地 Vite API 读写这两个 JSON 文件。管理员设置页也会把新增数据写回对应 JSON 文件。
-
-## 管理员模式
-
-点击右上角“管理模式”进入管理员模式。当前密码写在前端代码中，仅适合本地演示或内部调试使用。
-
-管理员模式支持：
-
-- 新增、编辑、删除项目
-- 新增、编辑、删除版本
-- 设置维护者
-- 通过 JSON 添加软件信息
+随后把 `dist/` 发布到 GitHub Pages。每次数据 JSON 或代码合入主分支后，重新构建即可得到最新页面。
 
 ## 常用页面
 
 - `/overview`：总览看板
 - `/software/kunpeng`：鲲鹏软件列表
 - `/software/ascend`：昇腾软件列表
-- `/admin/settings`：管理员 JSON 添加页
 
 ## 开发校验
 

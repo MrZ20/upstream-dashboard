@@ -1,0 +1,18 @@
+{
+  "name": "LZ4",
+  "category": "基础库&加速库",
+  "upstream": "https://github.com/lz4/lz4",
+  "latestVersion": "7.13.1",
+  "supportedVersions": [
+    {
+      "version": "15.14.0",
+      "openEuler": "openEuler 24.03 LTS",
+      "hardware": "Kunpeng 920B",
+      "functional": "pass",
+      "functionalDate": "2026-06-06",
+      "performance": "regression",
+      "performanceDate": "2026-06-20",
+      "integratedDate": "2025-10-05"
+    }
+  ]
+}

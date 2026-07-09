@@ -1,0 +1,14 @@
+{
+  "name": "stable-diffusion-webui",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "11.14.9",
+      "hardware": "Ascend 910C; Ascend 910",
+      "ci": "fail",
+      "ciDate": "2026-06-18",
+      "integratedDate": "2025-07-10"
+    }
+  ]
+}

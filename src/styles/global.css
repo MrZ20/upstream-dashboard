@@ -82,47 +82,7 @@ body,
   background: #2563eb;
 }
 
-.action-column-title {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-width: 0;
-}
 
-.action-column-title .action-column-toggle {
-  position: absolute;
-  right: 0;
-  flex: 0 0 20px;
-  width: 20px;
-  min-width: 20px;
-  padding: 0;
-}
-
-.ant-table-cell.action-column-collapsed {
-  padding-left: 4px !important;
-  padding-right: 4px !important;
-}
-
-.ant-table-cell.action-column-expanded {
-  padding-left: 8px !important;
-  padding-right: 8px !important;
-  text-align: center !important;
-}
-
-.column-filter-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-width: 160px;
-  padding: 4px 0;
-}
-
-.column-filter-panel .ant-checkbox-wrapper {
-  margin-inline-start: 0;
-  font-size: 13px;
-}
 
 .truncated-text {
   display: inline-block;

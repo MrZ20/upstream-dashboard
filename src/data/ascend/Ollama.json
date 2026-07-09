@@ -1,0 +1,14 @@
+{
+  "name": "Ollama",
+  "category": "推理加速",
+  "branch": "main",
+  "supportedVersions": [
+    {
+      "version": "6.20.14",
+      "hardware": "Ascend 910B; Ascend 310P",
+      "ci": "pass",
+      "ciDate": "2026-06-22",
+      "integratedDate": "2026-04-29"
+    }
+  ]
+}
