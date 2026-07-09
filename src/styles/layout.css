@@ -119,6 +119,13 @@
   background: transparent !important;
 }
 
+
+.app-menu .ant-menu-sub.ant-menu-inline .ant-menu-item {
+  width: calc(100% - 10px) !important;
+  margin-left: 10px !important;
+  padding-inline-start: 20px !important;
+}
+
 .app-sider-collapsed .app-menu.ant-menu {
   padding-inline: 14px;
 }
@@ -168,6 +175,32 @@
   font-size: 13px;
   line-height: 22px;
   white-space: nowrap;
+}
+
+.app-header-actions {
+  justify-content: flex-end;
+  min-width: 320px;
+}
+
+.app-header-refresh.ant-typography {
+  color: var(--crm-muted);
+  font-size: 12px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.app-refresh-button.ant-btn {
+  color: var(--crm-primary);
+  background: var(--crm-primary-soft);
+  border-color: transparent;
+  box-shadow: none;
+  font-weight: 500;
+}
+
+.app-refresh-button.ant-btn:not(:disabled):hover {
+  color: #ffffff;
+  background: var(--crm-primary);
+  border-color: var(--crm-primary);
 }
 
 .app-content.ant-layout-content {

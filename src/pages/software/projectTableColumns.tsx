@@ -1,8 +1,9 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
-import { Tag, Tooltip } from 'antd';
+import { Button, Dropdown, Tag, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { ArrowDownOutlined, ArrowUpOutlined, MinusOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, MinusOutlined, DownOutlined, ReloadOutlined } from '@ant-design/icons';
 import { FuncStatus, PerfStatus, ProjectType } from '../../domain/projectTypes';
+import type { ProjectRefreshScope } from '../../domain/projectStore';
 import { funcColor, funcText, perfColor, perfText } from '../../domain/projectFormat';
 import MaintainerTag from './MaintainerTag';
 import type { ProjectTableRow } from './tableRows';
@@ -18,6 +19,8 @@ interface ProjectColumnsOptions {
   projectType: ProjectType;
   visibleExpandedRowKeys: string[];
   onNameColumnResize: (event: ReactMouseEvent<HTMLSpanElement>) => void;
+  onRefreshAscendProject?: (name: string, scope: ProjectRefreshScope) => Promise<void> | void;
+  projectRefreshing?: Record<string, boolean>;
 }
 
 export function createProjectColumns({
@@ -25,6 +28,8 @@ export function createProjectColumns({
   projectType,
   visibleExpandedRowKeys,
   onNameColumnResize,
+  onRefreshAscendProject,
+  projectRefreshing = {},
 }: ProjectColumnsOptions): ColumnsType<ProjectTableRow> {
   const isAscend = projectType === '昇腾';
   const validationOverviewVisible = !isAscend;
@@ -215,6 +220,46 @@ export function createProjectColumns({
         : <span style={{ color: '#ccc' }}>-</span>;
     },
   });
+
+  if (isAscend && onRefreshAscendProject) {
+    columns.push({
+      title: '刷新',
+      key: 'refresh',
+      width: 150,
+      render: (_: unknown, record: ProjectTableRow) => {
+        if (record.isVersion) return null;
+        const active = ['all', 'project', 'ci'].some(scope => projectRefreshing[`${record.name}:${scope}`]);
+        return (
+          <Dropdown
+            trigger={['click']}
+            menu={{
+              items: [
+                { key: 'all', label: '所有' },
+                { key: 'project', label: '仅项目' },
+                { key: 'ci', label: '仅 CI' },
+              ],
+              onClick: ({ key, domEvent }) => {
+                domEvent.stopPropagation();
+                void onRefreshAscendProject(record.name, key as ProjectRefreshScope);
+              },
+            }}
+          >
+            <Button
+              className="row-refresh-button"
+              icon={<ReloadOutlined spin={active} />}
+              loading={active}
+              size="small"
+              type="text"
+              onClick={event => event.stopPropagation()}
+            >
+              刷新 <DownOutlined />
+            </Button>
+          </Dropdown>
+        );
+      },
+    });
+  }
+
 
   return columns;
 }

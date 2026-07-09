@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:data": "node scripts/sync-data.mjs",
+    "sync:server": "node scripts/sync-server.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",

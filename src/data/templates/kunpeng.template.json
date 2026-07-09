@@ -1,0 +1,22 @@
+{
+  "name": "ExampleKunpengLib",
+  "category": "基础库&加速库",
+  "upstream": "https://github.com/example/example-kunpeng-lib",
+  "latestVersion": "1.2.3",
+  "maintainer": {
+    "name": "zhangsan",
+    "email": "zhangsan@example.com"
+  },
+  "supportedVersions": [
+    {
+      "version": "1.0.0",
+      "openEuler": "openEuler 24.03 LTS; openEuler 22.03 LTS SP3",
+      "hardware": "Kunpeng 930; Kunpeng 920B",
+      "functional": "pass",
+      "functionalDate": "2026-07-06",
+      "performance": "stable",
+      "performanceDate": "2026-07-06",
+      "integratedDate": "2026-07-06"
+    }
+  ]
+}

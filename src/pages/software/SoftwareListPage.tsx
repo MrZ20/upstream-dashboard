@@ -8,7 +8,7 @@ import ProjectTable from './ProjectTable';
 
 export default function SoftwareList() {
   const location = useLocation();
-  const { projects } = useProjects();
+  const { projects, loading, refreshAscendProject, projectRefreshing } = useProjects();
   const [search, setSearch] = useState('');
   const [expandAllRows, setExpandAllRows] = useState(false);
 
@@ -51,6 +51,9 @@ export default function SoftwareList() {
           projects={filtered}
           projectType={projectType}
           expandAllRows={expandAllRows}
+          loading={loading}
+          onRefreshAscendProject={projectType === '昇腾' ? refreshAscendProject : undefined}
+          projectRefreshing={projectRefreshing}
         />
       </div>
     </div>

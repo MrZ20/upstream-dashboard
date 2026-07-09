@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from
 import { Table } from 'antd';
 import type { TablePaginationConfig } from 'antd/es/table';
 import { Project, ProjectType } from '../../domain/projectTypes';
+import type { ProjectRefreshScope } from '../../domain/projectStore';
 import { buildProjectRows, type ProjectTableRow } from './tableRows';
 import { createProjectColumns } from './projectTableColumns';
 
@@ -14,6 +15,9 @@ interface ProjectTableProps {
   projectType: ProjectType;
   pagination?: false | TablePaginationConfig;
   expandAllRows?: boolean;
+  loading?: boolean;
+  onRefreshAscendProject?: (name: string, scope: ProjectRefreshScope) => Promise<void> | void;
+  projectRefreshing?: Record<string, boolean>;
 }
 
 export default function ProjectTable({
@@ -26,6 +30,9 @@ export default function ProjectTable({
     showTotal: total => `共 ${total} 个项目`,
   },
   expandAllRows = false,
+  loading = false,
+  onRefreshAscendProject,
+  projectRefreshing = {},
 }: ProjectTableProps) {
   const [expandedRowKeys, setExpandedRowKeys] = useState<string[]>([]);
   const [nameColumnWidth, setNameColumnWidth] = useState(defaultNameColumnWidth);
@@ -72,6 +79,8 @@ export default function ProjectTable({
     projectType,
     visibleExpandedRowKeys,
     onNameColumnResize: startNameColumnResize,
+    onRefreshAscendProject,
+    projectRefreshing,
   });
 
   const scrollWidth = columns.reduce((total, column) => (
@@ -86,6 +95,7 @@ export default function ProjectTable({
       columns={columns}
       dataSource={treeData}
       rowKey="key"
+      loading={loading}
       scroll={tableScroll}
       pagination={pagination}
       size="middle"

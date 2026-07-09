@@ -1,15 +1,17 @@
 # upstream-dashboard
 
-`upstream-dashboard` 是一个静态开源项目支持看板，用于展示 openEuler 生态中鲲鹏/昇腾相关开源项目的分类、版本、硬件型号、验证结果和维护者信息。
+`upstream-dashboard` 是 openEuler 生态开源项目支持看板，用于展示鲲鹏/昇腾相关开源项目的分类、版本、硬件型号、验证结果和维护者信息。
 
-项目基于 React + TypeScript + Vite + Ant Design + ECharts 构建。页面在构建阶段读取 `src/data` 下的 JSON 数据，运行时只负责展示，不提供新增、编辑、删除、管理员登录或数据写回能力。
+项目基于 React + TypeScript + Vite + Ant Design + ECharts 构建。前端页面是静态产物，由 Nginx 托管；运行时数据保存在容器内 `/project-data`，并由容器内同步脚本定时从远端仓库刷新。
 
 ## 目录
 
 - [功能范围](#功能范围)
 - [环境要求](#环境要求)
 - [本地运行](#本地运行)
+- [数据来源](#数据来源)
 - [数据维护](#数据维护)
+- [运行时数据刷新](#运行时数据刷新)
 - [构建与预览](#构建与预览)
 - [Docker 部署](#docker-部署)
 - [常用页面](#常用页面)
@@ -17,13 +19,14 @@
 
 ## 功能范围
 
-当前项目是纯静态前端应用：
-
 - 总览看板：展示鲲鹏/昇腾项目数量、通过率、分类分布和待关注项。
 - 软件列表：展示项目名称、分类、版本、硬件型号、验证状态和维护者信息。
-- 数据来源：构建时读取仓库内 JSON 文件。
-- 数据更新：通过修改 JSON 文件并重新构建完成。
+- 真实数据：容器启动时从远端仓库同步到 `/project-data`，页面运行时从 `/runtime-data` 读取。
+- 本地模板：`src/data/templates` 只保存 JSON 格式参考，不作为页面真实数据。
+- 页面刷新：页面顶部展示上次刷新时间，并提供手动刷新按钮。
 - 部署方式：构建 Docker 镜像，远端拉取镜像运行。
+
+页面不提供新增、编辑、删除或管理员登录。数据修改通过更新远端数据仓中的 JSON 完成。
 
 ## 环境要求
 
@@ -38,20 +41,13 @@
 
 ## 本地运行
 
-克隆项目并进入目录：
-
-```bash
-git clone <your-repo-url>
-cd upstream-dashboard
-```
-
 安装依赖：
 
 ```bash
 npm install
 ```
 
-启动开发服务：
+启动前端开发服务：
 
 ```bash
 npm run dev
@@ -63,33 +59,109 @@ npm run dev
 http://127.0.0.1:5173
 ```
 
-## 数据维护
+如果要在本地调试运行时数据接口，可以另开一个终端启动同步服务：
 
-项目数据按领域拆分存放，每个软件一个 JSON 文件：
+```bash
+DATA_DIR=/tmp/upstream-dashboard-data npm run sync:server
+```
+
+手动同步一次远端数据：
+
+```bash
+DATA_DIR=/tmp/upstream-dashboard-data npm run sync:data
+```
+
+Vite 已把 `/api/data` 和 `/runtime-data` 代理到本地同步服务的 `3001` 端口。
+
+
+## 数据来源
+
+真实数据来自两个远端数据仓，容器内同步脚本会分别稀疏克隆对应目录：
+
+| 领域 | 默认仓库 | 默认目录 | 说明 |
+| --- | --- | --- | --- |
+| 鲲鹏 | `https://gitcode.com/openeuler/openeuler-docker-images.git` | `tests` | 读取 `tests/<软件名称>/results/*.json`。 |
+| 昇腾 | `https://github.com/MrZ20/ascend-testdata.git` | `project` | 读取 `project/<软件名称>/<软件名称>.json`，并可运行同目录 CI 脚本。 |
+
+容器启动时会先同步远端数据，把解析后的结果写入运行时目录：
+
+```text
+/project-data/kunpeng/_index.md
+/project-data/kunpeng/*.json
+/project-data/ascend/_index.md
+/project-data/ascend/*.json
+/project-data/metadata.json
+```
+
+Nginx 通过 `/runtime-data` 暴露容器内 `/project-data`，前端优先读取这里的数据。`metadata.json` 中的 `lastSyncedAt` 用于页面展示上次刷新时间。容器删除后这份运行时数据会一起删除，下次启动会重新从远端同步。
+
+仓库内的 `src/data` 现在只保留构建所需的空索引和格式模板：
 
 ```text
 src/data/kunpeng/_index.md
-src/data/kunpeng/<项目名称>.json
 src/data/ascend/_index.md
-src/data/ascend/<项目名称>.json
+src/data/templates/kunpeng.template.json
+src/data/templates/ascend.template.json
 ```
 
-`_index.md` 控制页面展示顺序。项目 JSON 不需要填写 `id` 和 `type`：`id` 会在构建时按顺序生成，`type` 会由所在目录自动推断。
+`src/data/templates` 不会被页面读取，只用于维护数据时参考字段格式。远端数据不可用且 `/project-data` 为空时，页面会显示空列表和“等待同步”，不会展示假数据。
 
-### 新增软件
 
-1. 判断软件属于鲲鹏还是昇腾。
-2. 在对应目录新增 `<项目名称>.json`，文件名建议和 `name` 保持一致。
-3. 按对应领域的 JSON 模板填写软件信息。
-4. 在对应 `_index.md` 中添加 `- <项目名称>.json`，放到希望展示的位置。
-5. 运行 `npm run build`，确认 JSON 格式和页面构建正常。
+## 数据维护
 
-### 修改或删除软件
+真实数据应维护在各自远端数据仓里。本仓库只维护页面代码、同步脚本和字段模板。
 
-- 修改软件：直接编辑对应项目 JSON。
-- 删除软件：删除对应项目 JSON，并从 `_index.md` 删除对应行。
-- 调整顺序：只调整 `_index.md` 中的文件顺序。
-- 修改完成后：运行 `npm run build` 进行校验。
+### 鲲鹏数据
+
+鲲鹏同步脚本读取：
+
+```text
+tests/<软件名称>/results/*.json
+```
+
+没有 JSON 的软件目录会跳过；同名项目只保留第一次解析到的内容；`_index.md` 由同步脚本自动生成，不需要远端提供。
+
+### 昇腾数据
+
+昇腾同步脚本读取：
+
+```text
+project/<软件名称>/<软件名称>.json
+```
+
+如果 JSON 中配置了 `script`，例如：
+
+```json
+{
+  "name": "vllm-ascend",
+  "category": "训练加速",
+  "upstream": "https://github.com/vllm-project/vllm-ascend",
+  "branch": "main",
+  "maintainer": {
+    "name": "lisi",
+    "email": "lisi@example.com"
+  },
+  "supportedVersions": [
+    {
+      "version": "main",
+      "hardware": "Ascend 910B; Ascend 910C",
+      "ci": "",
+      "ciDate": "",
+      "integratedDate": "2026-07-06"
+    }
+  ],
+  "script": "ci-result.sh"
+}
+```
+
+同步脚本会先把该软件目录同步到本地临时目录，再在同目录查找并运行该脚本，然后重新读取 JSON，把最新的 `ci` 和 `ciDate` 写入运行时数据。部署环境默认执行这个本地脚本；本地验证时可以设置 `ASCEND_CI_RUN_SCRIPTS=0` 跳过脚本执行。
+
+本仓库提供两个模板文件供参考：
+
+```text
+src/data/templates/kunpeng.template.json
+src/data/templates/ascend.template.json
+```
 
 ### 通用字段
 
@@ -103,8 +175,6 @@ src/data/ascend/<项目名称>.json
 
 ### 鲲鹏字段
 
-鲲鹏项目通常包含上游最新版本、openEuler 版本、功能验证和性能验证信息。
-
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
 | `latestVersion` | 否 | 上游最新版本。 |
@@ -117,36 +187,7 @@ src/data/ascend/<项目名称>.json
 | `supportedVersions[].performanceDate` | 否 | 性能验证日期。 |
 | `supportedVersions[].integratedDate` | 是 | 集成日期。 |
 
-鲲鹏 JSON 示例：
-
-```json
-{
-  "name": "ExampleLib",
-  "category": "基础库&加速库",
-  "upstream": "https://github.com/example/example-lib",
-  "latestVersion": "1.2.3",
-  "maintainer": {
-    "name": "zhangsan",
-    "email": "zhangsan@example.com"
-  },
-  "supportedVersions": [
-    {
-      "version": "1.0.0",
-      "openEuler": "openEuler 24.03 LTS; openEuler 22.03 LTS SP3",
-      "hardware": "Kunpeng 930; Kunpeng 920B",
-      "functional": "pass",
-      "functionalDate": "2026-07-06",
-      "performance": "stable",
-      "performanceDate": "2026-07-06",
-      "integratedDate": "2026-07-06"
-    }
-  ]
-}
-```
-
 ### 昇腾字段
-
-昇腾项目通常包含看护分支、硬件型号和 CI 验证信息。
 
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
@@ -156,30 +197,39 @@ src/data/ascend/<项目名称>.json
 | `supportedVersions[].ci` | 否 | CI 验证结果：`pass`、`fail` 或 `null`。 |
 | `supportedVersions[].ciDate` | 否 | CI 验证日期。 |
 | `supportedVersions[].integratedDate` | 是 | 集成日期。 |
+| `script` | 否 | 同目录 CI 刷新脚本文件名，例如 `ci-result.sh`。 |
 
-昇腾 JSON 示例：
 
-```json
-{
-  "name": "ExampleModel",
-  "category": "训练加速",
-  "upstream": "https://github.com/example/example-model",
-  "branch": "main",
-  "maintainer": {
-    "name": "lisi",
-    "email": "lisi@example.com"
-  },
-  "supportedVersions": [
-    {
-      "version": "1.0.0",
-      "hardware": "Ascend 910B; Ascend 910C",
-      "ci": "pass",
-      "ciDate": "2026-07-06",
-      "integratedDate": "2026-07-06"
-    }
-  ]
-}
+## 运行时数据刷新
+
+容器内的数据同步脚本会从远端仓库拉取最新数据。全量同步逻辑：
+
+1. 稀疏克隆鲲鹏数据仓的 `KUNPENG_TESTS_PATH`，默认 `tests`。
+2. 稀疏克隆昇腾数据仓的 `ASCEND_PROJECTS_PATH`，默认 `project`。
+3. 分别解析两个领域的 JSON，生成 `/project-data/kunpeng` 和 `/project-data/ascend`。
+4. 写入 `/project-data/metadata.json`，其中包含 `lastSyncedAt`，前端用它显示上次刷新时间。
+5. 原子替换运行时目录，避免页面读到半更新状态。
+
+容器首次启动会先执行一次同步，再启动 Nginx 对外服务。首次同步成功后，后台自动刷新默认一天一次：
+
+```text
+SYNC_INTERVAL_SECONDS=86400
 ```
+
+页面右上角按领域刷新：鲲鹏页面显示一个“刷新数据”按钮；昇腾页面显示一个“刷新数据”下拉按钮，可选择“所有”“仅项目”“仅 CI”。自动同步和手动同步共用同一个锁，避免同时写数据。
+
+昇腾软件列表支持单项目刷新：
+
+| 接口 | 说明 |
+| --- | --- |
+| `POST /api/data/ascend/all/refresh` | 刷新全部昇腾项目，并执行可用 CI 脚本。 |
+| `POST /api/data/ascend/project/refresh` | 刷新全部昇腾项目 JSON，不执行 CI 脚本，并尽量保留已有 CI 结果。 |
+| `POST /api/data/ascend/ci/refresh` | 使用容器本地项目缓存执行 CI 脚本，不重新拉取远端仓库。 |
+| `POST /api/projects/ascend/<name>/all/refresh` | 刷新单个昇腾项目，并执行该项目 CI 脚本。 |
+| `POST /api/projects/ascend/<name>/project/refresh` | 稀疏拉取 `project/<name>`，刷新该软件项目 JSON，不运行 CI 脚本，并尽量保留已有 CI 结果。 |
+| `POST /api/projects/ascend/<name>/ci/refresh` | 使用容器本地项目缓存执行该软件 CI 脚本，不重新拉取远端仓库。 |
+
+“仅 CI”依赖容器内的项目缓存；如果缓存不存在，需要先执行“所有”或“仅项目”。单项目刷新只 upsert 对应项目 JSON，不会覆盖整个昇腾列表。
 
 ## 构建与预览
 
@@ -203,10 +253,7 @@ npm run preview
 
 ## Docker 部署
 
-项目使用一个多阶段 `Dockerfile` 完成构建和运行：
-
-1. Node.js 阶段安装依赖并执行 `npm run build`。
-2. Nginx 阶段托管 `dist/` 静态产物。
+项目使用一个 Dockerfile 完成前端构建、Nginx 托管和运行时数据同步。
 
 构建镜像：
 
@@ -220,10 +267,12 @@ docker build -t upstream-dashboard:latest .
 docker build --build-arg VITE_BASE_PATH=/upstream-dashboard/ -t upstream-dashboard:latest .
 ```
 
-本地运行容器：
+本地运行容器，运行时数据直接保存在容器内：
 
 ```bash
-docker run --rm -p 8080:8080 upstream-dashboard:latest
+docker run --rm \
+  -p 8080:8080 \
+  upstream-dashboard:latest
 ```
 
 访问地址：
@@ -232,11 +281,31 @@ docker run --rm -p 8080:8080 upstream-dashboard:latest
 http://127.0.0.1:8080
 ```
 
+常用运行参数：
+
+| 环境变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `DATA_DIR` | `/project-data` | 容器内运行时数据目录；容器删除后数据随容器删除。 |
+| `KUNPENG_REPO_URL` | `https://gitcode.com/openeuler/openeuler-docker-images.git` | 鲲鹏数据仓库。 |
+| `KUNPENG_BRANCH` | `master` | 鲲鹏数据分支。 |
+| `KUNPENG_TESTS_PATH` | `tests` | 鲲鹏测试结果目录。 |
+| `ASCEND_REPO_URL` | `https://github.com/MrZ20/ascend-testdata.git` | 昇腾数据仓库。 |
+| `ASCEND_BRANCH` | `main` | 昇腾数据分支。 |
+| `ASCEND_PROJECTS_PATH` | `project` | 昇腾项目数据目录。 |
+| `ASCEND_CI_RUN_SCRIPTS` | `1` | 是否执行昇腾 JSON 中配置的 CI 脚本；本地验证可设为 `0`。 |
+| `PROJECT_SOURCE_DIR` | `/project-data/_source-cache` | 昇腾项目原始目录缓存，用于“仅 CI”刷新时避免重新拉取远端仓库。 |
+| `SYNC_INTERVAL_SECONDS` | `86400` | 自动同步间隔，单位秒。 |
+| `SYNC_SERVER_PORT` | `3001` | 容器内同步服务端口，只监听 `127.0.0.1`。 |
+| `SYNC_LOCK_STALE_SECONDS` | `7200` | 同步锁超过该秒数会被视为过期锁并清理。 |
+
 远端部署时，推荐构建并推送镜像到镜像仓库，再在服务器拉取运行：
 
 ```bash
 docker pull <registry>/<namespace>/upstream-dashboard:<tag>
-docker run -d --name upstream-dashboard -p 8080:8080 <registry>/<namespace>/upstream-dashboard:<tag>
+docker run -d \
+  --name upstream-dashboard \
+  -p 8080:8080 \
+  <registry>/<namespace>/upstream-dashboard:<tag>
 ```
 
 ## 常用页面

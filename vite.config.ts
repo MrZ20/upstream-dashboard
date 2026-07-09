@@ -7,5 +7,10 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5173,
+    proxy: {
+      '/api/data': 'http://127.0.0.1:3001',
+      '/api/projects': 'http://127.0.0.1:3001',
+      '/runtime-data': 'http://127.0.0.1:3001',
+    },
   },
 });

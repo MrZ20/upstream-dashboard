@@ -10,6 +10,10 @@
   display: flex;
   flex-direction: column;
   padding: 30px 30px 10px;
+  border: 1px solid rgba(229, 233, 246, 0.92) !important;
+  box-shadow:
+    0 22px 54px rgba(54, 39, 123, 0.1),
+    0 6px 18px rgba(25, 39, 78, 0.05);
 }
 
 .software-toolbar {
@@ -106,6 +110,22 @@
 
 .software-panel .project-table .ant-table-body::-webkit-scrollbar-track {
   background: transparent;
+}
+
+
+.row-refresh-actions {
+  white-space: nowrap;
+}
+
+.row-refresh-button.ant-btn {
+  color: var(--crm-primary);
+  font-size: 12px;
+  padding-inline: 6px;
+}
+
+.row-refresh-button.ant-btn:not(:disabled):hover {
+  color: var(--crm-primary);
+  background: var(--crm-primary-soft);
 }
 
 /* ---- Table ---- */

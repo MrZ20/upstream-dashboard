@@ -1,0 +1,19 @@
+{
+  "name": "ExampleAscendModel",
+  "category": "训练加速",
+  "upstream": "https://github.com/example/example-ascend-model",
+  "branch": "main",
+  "maintainer": {
+    "name": "lisi",
+    "email": "lisi@example.com"
+  },
+  "supportedVersions": [
+    {
+      "version": "1.0.0",
+      "hardware": "Ascend 910B; Ascend 910C",
+      "ci": "pass",
+      "ciDate": "2026-07-06",
+      "integratedDate": "2026-07-06"
+    }
+  ]
+}
