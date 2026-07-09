@@ -1,0 +1,178 @@
+/* ---- Shell ---- */
+
+.app-sider .ant-layout-sider-trigger {
+  color: var(--crm-primary);
+  background: #f7f5ff;
+  border-top: 1px solid #ebe7ff;
+}
+
+.app-sider .ant-layout-sider-trigger:hover {
+  color: #ffffff;
+  background: var(--crm-primary);
+}
+
+.app-shell {
+  height: 100vh;
+  overflow: hidden;
+  background: var(--crm-bg);
+}
+
+.app-sider.ant-layout-sider {
+  height: 100vh;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--crm-surface) !important;
+  box-shadow: var(--crm-shadow);
+  border-right: 0;
+}
+
+.app-brand {
+  min-height: 98px;
+  display: flex;
+  align-items: center;
+  padding: 28px 20px 18px;
+}
+
+.app-brand-full {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  background: var(--crm-primary);
+  box-shadow: 0 12px 22px rgba(89, 50, 234, 0.22);
+  flex: 0 0 auto;
+}
+
+.app-brand-mark-collapsed {
+  margin: 0 auto;
+}
+
+.app-brand-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.app-brand-title.ant-typography {
+  color: var(--crm-heading);
+  font-size: 15px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.app-brand-meta.ant-typography {
+  color: var(--crm-muted);
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.app-menu.ant-menu {
+  padding: 8px 20px;
+  border-inline-end: none !important;
+  background: transparent;
+}
+
+.app-menu .ant-menu-item,
+.app-menu .ant-menu-submenu-title {
+  height: 44px !important;
+  line-height: 44px !important;
+  margin: 6px 0 !important;
+  padding-inline: 14px !important;
+  color: var(--crm-muted);
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.app-menu .ant-menu-item .anticon,
+.app-menu .ant-menu-submenu-title .anticon {
+  color: inherit;
+}
+
+.app-menu .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  color: var(--crm-primary) !important;
+  background: var(--crm-primary-soft) !important;
+  box-shadow: none;
+}
+
+.app-menu .ant-menu-submenu-selected > .ant-menu-submenu-title .ant-menu-submenu-arrow {
+  color: var(--crm-primary) !important;
+}
+
+.app-menu .ant-menu-item-selected {
+  color: #ffffff !important;
+  background: var(--crm-primary) !important;
+  box-shadow: 0 12px 24px rgba(89, 50, 234, 0.2);
+}
+
+.app-menu .ant-menu-sub.ant-menu-inline {
+  background: transparent !important;
+}
+
+.app-sider-collapsed .app-menu.ant-menu {
+  padding-inline: 14px;
+}
+
+.app-main.ant-layout {
+  height: 100vh;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--crm-bg);
+}
+
+.app-header.ant-layout-header {
+  min-height: 94px;
+  height: 94px;
+  padding: 30px 38px 18px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  background: var(--crm-bg) !important;
+  border-bottom: 0;
+  box-shadow: none;
+}
+
+.app-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.app-header-eyebrow.ant-typography {
+  color: var(--crm-muted);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.app-header-title.ant-typography {
+  color: var(--crm-heading);
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 600;
+}
+
+.app-header-meta.ant-typography {
+  color: var(--crm-muted);
+  font-size: 13px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+
+.app-content.ant-layout-content {
+  height: calc(100vh - 94px);
+  padding: 0 38px 38px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}

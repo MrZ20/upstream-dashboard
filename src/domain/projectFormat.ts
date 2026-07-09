@@ -44,12 +44,6 @@ export function latestDate(values: Array<string | null | undefined>) {
   return sorted.length ? sorted[sorted.length - 1] : null;
 }
 
-export function formatMaintainerFilter(project: Project) {
-  return project.maintainer
-    ? `${project.maintainer.name} <${project.maintainer.email}>`
-    : '';
-}
-
 function isValidationGood(project: Project, version: VersionInfo) {
   if (project.type === '昇腾') return version.ci === 'pass';
   return version.functional === 'pass'

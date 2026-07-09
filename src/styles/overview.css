@@ -1,0 +1,105 @@
+/* ---- Overview ---- */
+.overview-domain-card.ant-card {
+  height: 100%;
+}
+
+.overview-domain-card-kunpeng.ant-card,
+.overview-domain-card-ascend.ant-card {
+  border-top: 0 !important;
+}
+
+.overview-domain-card-kunpeng .ant-card-head,
+.overview-domain-card-ascend .ant-card-head {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.metric-cell {
+  height: 100%;
+  padding: 18px 20px;
+  border: 1px solid #f0f2f8;
+  border-radius: 14px;
+  background: #f9fbff;
+}
+
+.ant-statistic-title {
+  color: #acacac !important;
+  font-size: 13px !important;
+  font-weight: 400;
+}
+
+.ant-statistic-content {
+  color: #333333;
+  font-size: 28px !important;
+  font-weight: 600;
+}
+
+.chart-card.ant-card {
+  min-height: 380px;
+}
+
+.risk-card .ant-table-thead > tr > th {
+  color: var(--crm-subtle) !important;
+  background: #ffffff !important;
+  font-weight: 500;
+}
+
+.overview-page {
+  color: var(--crm-text);
+}
+
+.overview-section {
+  margin-top: 20px;
+}
+
+.overview-domain-card .ant-card-body {
+  padding-top: 12px;
+}
+
+.overview-domain-card .ant-card-head-title::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+  background: var(--crm-primary);
+}
+
+.overview-domain-card-ascend .ant-card-head-title::after {
+  background: var(--crm-green);
+}
+
+.metric-cell {
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-cell .ant-statistic {
+  position: relative;
+}
+
+.metric-cell .ant-statistic-title {
+  margin-bottom: 4px;
+}
+
+.chart-card.ant-card .ant-card-body {
+  padding: 22px 24px 18px;
+}
+
+.risk-card.ant-card .ant-card-body {
+  padding-top: 8px;
+}
+
+.risk-table .ant-table {
+  border-radius: 0;
+}
+
+.risk-table .ant-table-tbody > tr > td {
+  background: #ffffff !important;
+}
+
+.risk-table .ant-table-tbody > tr:hover > td {
+  background: #f9fbff !important;
+}

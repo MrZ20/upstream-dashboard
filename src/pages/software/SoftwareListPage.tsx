@@ -8,7 +8,7 @@ import ProjectTable from './ProjectTable';
 
 export default function SoftwareList() {
   const location = useLocation();
-  const { projects, loading } = useProjects();
+  const { projects } = useProjects();
   const [search, setSearch] = useState('');
   const [expandAllRows, setExpandAllRows] = useState(false);
 
@@ -50,7 +50,6 @@ export default function SoftwareList() {
         <ProjectTable
           projects={filtered}
           projectType={projectType}
-          loading={loading}
           expandAllRows={expandAllRows}
         />
       </div>
